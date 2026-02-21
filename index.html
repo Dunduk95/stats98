@@ -3,7 +3,19 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Мировое Бюро Статистики — Информационный Портал v3.2</title>
+<title>Stats98 — Мировое Бюро Статистики</title>
+
+<!-- OG / Share Meta -->
+<meta property="og:title" content="Stats98 — Retro Data Portal from 1998">
+<meta property="og:description" content="Interactive Windows 98-styled data portal with charts, minesweeper, nickname generator, fake errors & dial-up loading. Pure HTML/CSS/JS.">
+<meta property="og:type" content="website">
+<meta property="og:image" content="https://stats98.vercel.app/og.png">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Stats98 — Retro Data Portal from 1998">
+<meta name="twitter:description" content="A forgotten data website from the late 90s. Draggable windows, fake BSODs, and dial-up sounds.">
+<meta name="twitter:image" content="https://stats98.vercel.app/og.png">
+<meta name="theme-color" content="#008080">
+
 <style>
   @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&family=VT323&family=IBM+Plex+Mono:wght@400;600&display=swap');
 
@@ -26,355 +38,83 @@
 
   * { margin: 0; padding: 0; box-sizing: border-box; }
 
-  /* === CUSTOM CURSOR (Windows 98 arrow) === */
-  body, html {
-    cursor: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="16" height="22" viewBox="0 0 16 22"><path d="M0 0 L0 17 L4 13 L7 19 L9 18 L6 12 L11 12 Z" fill="white" stroke="black" stroke-width="1"/></svg>') 0 0, auto;
-  }
+  body, html { cursor: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="16" height="22" viewBox="0 0 16 22"><path d="M0 0 L0 17 L4 13 L7 19 L9 18 L6 12 L11 12 Z" fill="white" stroke="black" stroke-width="1"/></svg>') 0 0, auto; }
+  a, button, .retro-btn, .win-btn, .start-btn, .start-menu-item, .bar-col, .pie-slice, .pie-legend-item, .retro-radio, .data-toggle, .taskbar-item, .tray-icon, .win-menubar span, .minesweeper-cell, .zodiac-btn, .share-btn { cursor: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="16" height="22" viewBox="0 0 16 22"><path d="M0 0 L0 17 L4 13 L7 19 L9 18 L6 12 L11 12 Z" fill="white" stroke="black" stroke-width="1"/></svg>') 0 0, pointer; }
+  .win-titlebar { cursor: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="16" height="22" viewBox="0 0 16 22"><path d="M0 0 L0 17 L4 13 L7 19 L9 18 L6 12 L11 12 Z" fill="white" stroke="black" stroke-width="1"/></svg>') 0 0, grab; }
 
-  a, button, .retro-btn, .win-btn, .start-btn, .start-menu-item, .bar-col, .pie-slice, .pie-legend-item, .retro-radio, .data-toggle, .taskbar-item, .tray-icon, .win-menubar span, .minesweeper-cell {
-    cursor: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="16" height="22" viewBox="0 0 16 22"><path d="M0 0 L0 17 L4 13 L7 19 L9 18 L6 12 L11 12 Z" fill="white" stroke="black" stroke-width="1"/></svg>') 0 0, pointer;
-  }
+  body { font-family: 'VT323', monospace; background: var(--desktop-bg); min-height: 100vh; overflow-x: hidden; padding-bottom: 48px; }
 
-  .win-titlebar {
-    cursor: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="16" height="22" viewBox="0 0 16 22"><path d="M0 0 L0 17 L4 13 L7 19 L9 18 L6 12 L11 12 Z" fill="white" stroke="black" stroke-width="1"/></svg>') 0 0, grab;
-  }
+  /* LOADING */
+  .loading-screen { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: #000; z-index: 99999; display: flex; flex-direction: column; align-items: center; justify-content: center; transition: opacity 0.5s; }
+  .loading-screen.hidden { opacity: 0; pointer-events: none; }
+  .loading-logo { font-family: 'Press Start 2P', monospace; font-size: 16px; color: var(--accent-yellow); text-shadow: 0 0 10px rgba(255,204,0,0.5); margin-bottom: 30px; text-align: center; line-height: 1.6; }
+  .loading-bar-outer { width: 400px; max-width: 80vw; height: 22px; background: #1a1a2e; border: 2px solid; border-color: var(--win-dark-shadow) var(--win-highlight) var(--win-highlight) var(--win-dark-shadow); padding: 2px; }
+  .loading-bar-inner { height: 100%; width: 0%; background: repeating-linear-gradient(90deg, #000080 0px, #000080 8px, #1084d0 8px, #1084d0 16px); transition: width 0.3s; }
+  .loading-text { font-family: 'VT323', monospace; font-size: 18px; color: #888; margin-top: 14px; height: 22px; }
+  .loading-modem { font-family: 'VT323', monospace; font-size: 14px; color: #555; margin-top: 8px; }
 
-  body {
-    font-family: 'VT323', monospace;
-    background: var(--desktop-bg);
-    min-height: 100vh;
-    overflow-x: hidden;
-    padding-bottom: 48px;
-  }
+  /* BSOD */
+  .bsod-screen { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: #0000aa; z-index: 999999; display: none; flex-direction: column; align-items: center; justify-content: center; padding: 40px; }
+  .bsod-screen.visible { display: flex; }
+  .bsod-title { font-family: 'IBM Plex Mono', monospace; font-size: 16px; background: #aaaaaa; color: #0000aa; padding: 2px 12px; margin-bottom: 30px; font-weight: 600; }
+  .bsod-text { font-family: 'IBM Plex Mono', monospace; font-size: 14px; color: white; text-align: center; line-height: 1.8; max-width: 600px; }
 
-  /* === LOADING SCREEN === */
-  .loading-screen {
-    position: fixed;
-    top: 0; left: 0; right: 0; bottom: 0;
-    background: #000;
-    z-index: 99999;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    transition: opacity 0.5s;
-  }
+  /* CRT */
+  body::after { content: ''; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,0,0,0.03) 2px, rgba(0,0,0,0.03) 4px); pointer-events: none; z-index: 10000; }
+  body::before { content: ''; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: radial-gradient(ellipse at center, transparent 60%, rgba(0,0,0,0.25) 100%); pointer-events: none; z-index: 9999; }
+  .desktop-pattern { position: fixed; top: 0; left: 0; right: 0; bottom: 48px; background: radial-gradient(circle at 20% 30%, rgba(0,180,170,0.3) 0%, transparent 50%), radial-gradient(circle at 80% 70%, rgba(0,100,100,0.3) 0%, transparent 50%), repeating-linear-gradient(45deg, transparent, transparent 20px, rgba(255,255,255,0.02) 20px, rgba(255,255,255,0.02) 22px); z-index: 0; }
 
-  .loading-screen.hidden {
-    opacity: 0;
-    pointer-events: none;
-  }
+  /* ERROR DIALOG */
+  .error-dialog { position: fixed; z-index: 50000; background: var(--win-bg); border: 2px solid; border-color: var(--win-highlight) var(--win-dark-shadow) var(--win-dark-shadow) var(--win-highlight); box-shadow: 4px 4px 0 rgba(0,0,0,0.3); min-width: 340px; max-width: 420px; font-family: 'IBM Plex Mono', monospace; }
+  .error-dialog .win-titlebar { background: linear-gradient(90deg, #000080, #1084d0); padding: 3px 4px; font-size: 12px; }
+  .error-body { padding: 16px 20px; display: flex; align-items: flex-start; gap: 14px; }
+  .error-icon { font-size: 32px; flex-shrink: 0; line-height: 1; }
+  .error-text { font-size: 13px; line-height: 1.5; color: #000; }
+  .error-buttons { display: flex; justify-content: center; gap: 8px; padding: 0 20px 14px; }
+  .error-buttons .retro-btn { min-width: 80px; text-align: center; }
 
-  .loading-logo {
-    font-family: 'Press Start 2P', monospace;
-    font-size: 16px;
-    color: var(--accent-yellow);
-    text-shadow: 0 0 10px rgba(255,204,0,0.5);
-    margin-bottom: 30px;
-    text-align: center;
-    line-height: 1.6;
-  }
-
-  .loading-bar-outer {
-    width: 400px;
-    max-width: 80vw;
-    height: 22px;
-    background: #1a1a2e;
-    border: 2px solid;
-    border-color: var(--win-dark-shadow) var(--win-highlight) var(--win-highlight) var(--win-dark-shadow);
-    padding: 2px;
-  }
-
-  .loading-bar-inner {
-    height: 100%;
-    width: 0%;
-    background: repeating-linear-gradient(90deg, #000080 0px, #000080 8px, #1084d0 8px, #1084d0 16px);
-    transition: width 0.3s;
-  }
-
-  .loading-text {
-    font-family: 'VT323', monospace;
-    font-size: 18px;
-    color: #888;
-    margin-top: 14px;
-    height: 22px;
-  }
-
-  .loading-modem {
-    font-family: 'VT323', monospace;
-    font-size: 14px;
-    color: #555;
-    margin-top: 8px;
-  }
-
-  /* === CRT SCANLINES === */
-  body::after {
-    content: '';
-    position: fixed;
-    top: 0; left: 0; right: 0; bottom: 0;
-    background: repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,0,0,0.03) 2px, rgba(0,0,0,0.03) 4px);
-    pointer-events: none;
-    z-index: 10000;
-  }
-
-  body::before {
-    content: '';
-    position: fixed;
-    top: 0; left: 0; right: 0; bottom: 0;
-    background: radial-gradient(ellipse at center, transparent 60%, rgba(0,0,0,0.25) 100%);
-    pointer-events: none;
-    z-index: 9999;
-  }
-
-  .desktop-pattern {
-    position: fixed;
-    top: 0; left: 0; right: 0; bottom: 48px;
-    background:
-      radial-gradient(circle at 20% 30%, rgba(0,180,170,0.3) 0%, transparent 50%),
-      radial-gradient(circle at 80% 70%, rgba(0,100,100,0.3) 0%, transparent 50%),
-      repeating-linear-gradient(45deg, transparent, transparent 20px, rgba(255,255,255,0.02) 20px, rgba(255,255,255,0.02) 22px);
-    z-index: 0;
-  }
-
-  /* === ERROR DIALOG === */
-  .error-dialog {
-    position: fixed;
-    z-index: 50000;
-    background: var(--win-bg);
-    border: 2px solid;
-    border-color: var(--win-highlight) var(--win-dark-shadow) var(--win-dark-shadow) var(--win-highlight);
-    box-shadow: 4px 4px 0 rgba(0,0,0,0.3);
-    min-width: 340px;
-    max-width: 420px;
-    font-family: 'IBM Plex Mono', monospace;
-  }
-
-  .error-dialog .win-titlebar {
-    background: linear-gradient(90deg, #000080, #1084d0);
-    padding: 3px 4px;
-    font-size: 12px;
-  }
-
-  .error-body {
-    padding: 16px 20px;
-    display: flex;
-    align-items: flex-start;
-    gap: 14px;
-  }
-
-  .error-icon {
-    font-size: 32px;
-    flex-shrink: 0;
-    line-height: 1;
-  }
-
-  .error-text {
-    font-size: 13px;
-    line-height: 1.5;
-    color: #000;
-  }
-
-  .error-buttons {
-    display: flex;
-    justify-content: center;
-    gap: 8px;
-    padding: 0 20px 14px;
-  }
-
-  .error-buttons .retro-btn {
-    min-width: 80px;
-    text-align: center;
-  }
-
-  /* === WINDOW STYLES === */
-  .win-window {
-    position: absolute;
-    background: var(--win-bg);
-    border: 2px solid;
-    border-color: var(--win-highlight) var(--win-dark-shadow) var(--win-dark-shadow) var(--win-highlight);
-    box-shadow: 1px 1px 0 var(--win-dark-shadow);
-    z-index: 10;
-    min-width: 200px;
-  }
-
+  /* WINDOW */
+  .win-window { position: absolute; background: var(--win-bg); border: 2px solid; border-color: var(--win-highlight) var(--win-dark-shadow) var(--win-dark-shadow) var(--win-highlight); box-shadow: 1px 1px 0 var(--win-dark-shadow); z-index: 10; min-width: 200px; }
   .win-window.active { z-index: 100; }
-
-  .win-titlebar {
-    background: linear-gradient(90deg, var(--win-title), #1084d0);
-    color: white;
-    padding: 3px 4px;
-    font-family: 'IBM Plex Mono', monospace;
-    font-size: 13px;
-    font-weight: 600;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    user-select: none;
-    letter-spacing: 0.3px;
-  }
-
-  .win-titlebar.inactive {
-    background: linear-gradient(90deg, var(--win-title-inactive), #a0a0a0);
-  }
-
-  .win-titlebar-text {
-    display: flex;
-    align-items: center;
-    gap: 5px;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-  }
-
-  .win-titlebar-buttons {
-    display: flex;
-    gap: 2px;
-    flex-shrink: 0;
-  }
-
-  .win-btn {
-    width: 16px;
-    height: 14px;
-    background: var(--btn-face);
-    border: 1px solid;
-    border-color: var(--win-highlight) var(--win-dark-shadow) var(--win-dark-shadow) var(--win-highlight);
-    font-size: 9px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-family: 'IBM Plex Mono', monospace;
-    font-weight: 600;
-    color: #000;
-    padding: 0;
-    line-height: 1;
-  }
-
-  .win-btn:active {
-    border-color: var(--win-dark-shadow) var(--win-highlight) var(--win-highlight) var(--win-dark-shadow);
-    padding: 1px 0 0 1px;
-  }
-
-  .win-menubar {
-    background: var(--win-bg);
-    border-bottom: 1px solid var(--win-shadow);
-    padding: 1px 0;
-    display: flex;
-    font-family: 'IBM Plex Mono', monospace;
-    font-size: 12px;
-  }
-
+  .win-titlebar { background: linear-gradient(90deg, var(--win-title), #1084d0); color: white; padding: 3px 4px; font-family: 'IBM Plex Mono', monospace; font-size: 13px; font-weight: 600; display: flex; align-items: center; justify-content: space-between; user-select: none; letter-spacing: 0.3px; }
+  .win-titlebar.inactive { background: linear-gradient(90deg, var(--win-title-inactive), #a0a0a0); }
+  .win-titlebar-text { display: flex; align-items: center; gap: 5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .win-titlebar-buttons { display: flex; gap: 2px; flex-shrink: 0; }
+  .win-btn { width: 16px; height: 14px; background: var(--btn-face); border: 1px solid; border-color: var(--win-highlight) var(--win-dark-shadow) var(--win-dark-shadow) var(--win-highlight); font-size: 9px; display: flex; align-items: center; justify-content: center; font-family: 'IBM Plex Mono', monospace; font-weight: 600; color: #000; padding: 0; line-height: 1; }
+  .win-btn:active { border-color: var(--win-dark-shadow) var(--win-highlight) var(--win-highlight) var(--win-dark-shadow); padding: 1px 0 0 1px; }
+  .win-menubar { background: var(--win-bg); border-bottom: 1px solid var(--win-shadow); padding: 1px 0; display: flex; font-family: 'IBM Plex Mono', monospace; font-size: 12px; }
   .win-menubar span { padding: 2px 8px; }
   .win-menubar span:hover { background: var(--win-title); color: white; }
+  .win-body { padding: 8px; border: 2px solid; border-color: var(--win-shadow) var(--win-highlight) var(--win-highlight) var(--win-shadow); margin: 2px; background: white; overflow: auto; }
+  .win-statusbar { background: var(--win-bg); border-top: 1px solid var(--win-highlight); padding: 2px 6px; font-family: 'IBM Plex Mono', monospace; font-size: 11px; display: flex; gap: 8px; }
+  .win-statusbar-section { border: 1px solid; border-color: var(--win-shadow) var(--win-highlight) var(--win-highlight) var(--win-shadow); padding: 1px 6px; flex: 1; }
 
-  .win-body {
-    padding: 8px;
-    border: 2px solid;
-    border-color: var(--win-shadow) var(--win-highlight) var(--win-highlight) var(--win-shadow);
-    margin: 2px;
-    background: white;
-    overflow: auto;
-  }
-
-  .win-statusbar {
-    background: var(--win-bg);
-    border-top: 1px solid var(--win-highlight);
-    padding: 2px 6px;
-    font-family: 'IBM Plex Mono', monospace;
-    font-size: 11px;
-    display: flex;
-    gap: 8px;
-  }
-
-  .win-statusbar-section {
-    border: 1px solid;
-    border-color: var(--win-shadow) var(--win-highlight) var(--win-highlight) var(--win-shadow);
-    padding: 1px 6px;
-    flex: 1;
-  }
-
-  .retro-btn {
-    font-family: 'IBM Plex Mono', monospace;
-    font-size: 12px;
-    background: var(--btn-face);
-    border: 2px solid;
-    border-color: var(--win-highlight) var(--win-dark-shadow) var(--win-dark-shadow) var(--win-highlight);
-    padding: 4px 16px;
-    position: relative;
-  }
-
-  .retro-btn:active {
-    border-color: var(--win-dark-shadow) var(--win-highlight) var(--win-highlight) var(--win-dark-shadow);
-    padding: 5px 15px 3px 17px;
-  }
-
+  .retro-btn { font-family: 'IBM Plex Mono', monospace; font-size: 12px; background: var(--btn-face); border: 2px solid; border-color: var(--win-highlight) var(--win-dark-shadow) var(--win-dark-shadow) var(--win-highlight); padding: 4px 16px; }
+  .retro-btn:active { border-color: var(--win-dark-shadow) var(--win-highlight) var(--win-highlight) var(--win-dark-shadow); padding: 5px 15px 3px 17px; }
   .retro-btn:focus { outline: 1px dotted #000; outline-offset: -4px; }
+  .retro-btn.pressed { border-color: var(--win-dark-shadow) var(--win-highlight) var(--win-highlight) var(--win-dark-shadow); background: #b0b0b0; }
 
-  .retro-btn.pressed {
-    border-color: var(--win-dark-shadow) var(--win-highlight) var(--win-highlight) var(--win-dark-shadow);
-    background: #b0b0b0;
-  }
-
-  /* === BANNER === */
-  .site-banner {
-    position: relative;
-    z-index: 5;
-    background: linear-gradient(180deg, #1a0a3e 0%, #2d1066 40%, #1a0a3e 100%);
-    border-bottom: 3px solid var(--accent-yellow);
-    padding: 15px 20px 10px;
-    text-align: center;
-    overflow: hidden;
-  }
-
-  .site-banner::before {
-    content: '';
-    position: absolute;
-    top: 0; left: 0; right: 0; bottom: 0;
-    background:
-      repeating-linear-gradient(90deg, transparent, transparent 3px, rgba(255,255,255,0.02) 3px, rgba(255,255,255,0.02) 4px),
-      repeating-linear-gradient(0deg, transparent, transparent 3px, rgba(255,255,255,0.015) 3px, rgba(255,255,255,0.015) 4px);
-  }
-
-  .banner-title {
-    font-family: 'Press Start 2P', monospace;
-    font-size: 20px;
-    color: var(--accent-yellow);
-    text-shadow: 2px 2px 0 #cc6600, 0 0 20px rgba(255,204,0,0.4);
-    margin-bottom: 6px;
-    position: relative;
-  }
-
-  .banner-subtitle {
-    font-family: 'VT323', monospace;
-    font-size: 22px;
-    color: #88ccff;
-    letter-spacing: 3px;
-    position: relative;
-  }
-
+  /* BANNER */
+  .site-banner { position: relative; z-index: 5; background: linear-gradient(180deg, #1a0a3e 0%, #2d1066 40%, #1a0a3e 100%); border-bottom: 3px solid var(--accent-yellow); padding: 15px 20px 10px; text-align: center; overflow: hidden; }
+  .site-banner::before { content: ''; position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: repeating-linear-gradient(90deg, transparent, transparent 3px, rgba(255,255,255,0.02) 3px, rgba(255,255,255,0.02) 4px), repeating-linear-gradient(0deg, transparent, transparent 3px, rgba(255,255,255,0.015) 3px, rgba(255,255,255,0.015) 4px); }
+  .banner-title { font-family: 'Press Start 2P', monospace; font-size: 20px; color: var(--accent-yellow); text-shadow: 2px 2px 0 #cc6600, 0 0 20px rgba(255,204,0,0.4); margin-bottom: 6px; position: relative; }
+  .banner-subtitle { font-family: 'VT323', monospace; font-size: 22px; color: #88ccff; letter-spacing: 3px; position: relative; }
   .banner-stars { position: absolute; top: 0; left: 0; right: 0; bottom: 0; overflow: hidden; }
   .banner-stars span { position: absolute; color: white; font-size: 10px; animation: twinkle 2s infinite; }
   @keyframes twinkle { 0%, 100% { opacity: 0.2; } 50% { opacity: 1; } }
 
-  /* === MARQUEE === */
-  .marquee-bar {
-    background: #000080;
-    color: var(--accent-yellow);
-    font-family: 'VT323', monospace;
-    font-size: 18px;
-    padding: 4px 0;
-    overflow: hidden;
-    white-space: nowrap;
-    position: relative;
-    z-index: 5;
-    border-bottom: 2px solid var(--accent-teal);
-  }
+  .lang-switch { position: absolute; top: 8px; right: 12px; z-index: 10; display: flex; gap: 4px; }
+  .lang-btn { font-family: 'IBM Plex Mono', monospace; font-size: 11px; background: rgba(255,255,255,0.1); color: #88ccff; border: 1px solid rgba(255,255,255,0.2); padding: 2px 8px; border-radius: 2px; }
+  .lang-btn.active { background: var(--accent-yellow); color: #1a0a3e; border-color: var(--accent-yellow); font-weight: 600; }
 
+  /* MARQUEE */
+  .marquee-bar { background: #000080; color: var(--accent-yellow); font-family: 'VT323', monospace; font-size: 18px; padding: 4px 0; overflow: hidden; white-space: nowrap; position: relative; z-index: 5; border-bottom: 2px solid var(--accent-teal); }
   .marquee-inner { display: inline-block; animation: marquee 30s linear infinite; padding-left: 100%; }
   @keyframes marquee { 0% { transform: translateX(0); } 100% { transform: translateX(-100%); } }
 
   .content-area { position: relative; z-index: 5; padding: 20px; min-height: calc(100vh - 200px); }
 
-  /* === POPULATION === */
+  /* POPULATION */
   .population-widget { text-align: center; padding: 12px; }
   .population-label { font-family: 'Press Start 2P', monospace; font-size: 10px; color: #660066; margin-bottom: 10px; letter-spacing: 1px; }
   .odometer { display: flex; justify-content: center; gap: 3px; margin-bottom: 8px; }
@@ -384,11 +124,10 @@
   .population-rate { font-family: 'VT323', monospace; font-size: 16px; color: #888; }
   .population-rate span { color: #00aa66; font-weight: bold; }
 
-  /* === BAR CHART === */
+  /* BAR CHART */
   .bar-chart { display: flex; align-items: flex-end; gap: 12px; height: 200px; padding: 10px 10px 30px; position: relative; }
   .bar-chart::before { content: ''; position: absolute; bottom: 28px; left: 0; right: 0; height: 1px; background: #999; }
   .bar-col { flex: 1; display: flex; flex-direction: column; align-items: center; position: relative; }
-
   .bar-fill { width: 100%; max-width: 50px; background: linear-gradient(180deg, var(--accent-teal), #006666); border: 1px solid; border-color: #00ccbb #004444 #004444 #00ccbb; transition: all 0.2s; position: relative; animation: barGrow 1s ease-out forwards; transform-origin: bottom; }
   .bar-col:nth-child(2) .bar-fill { background: linear-gradient(180deg, var(--accent-magenta), #882266); border-color: #ee66bb #661144 #661144 #ee66bb; }
   .bar-col:nth-child(3) .bar-fill { background: linear-gradient(180deg, var(--accent-yellow), #aa8800); border-color: #ffee44 #886600 #886600 #ffee44; }
@@ -396,16 +135,14 @@
   .bar-col:nth-child(5) .bar-fill { background: linear-gradient(180deg, var(--accent-coral), #aa4433); border-color: #ff9988 #882222 #882222 #ff9988; }
   .bar-col:nth-child(6) .bar-fill { background: linear-gradient(180deg, var(--accent-blue), #225588); border-color: #66aadd #224466 #224466 #66aadd; }
   .bar-col:hover .bar-fill { filter: brightness(1.2); box-shadow: 0 0 10px rgba(255,255,255,0.3); }
-
   @keyframes barGrow { from { transform: scaleY(0); } to { transform: scaleY(1); } }
-
   .bar-value { font-family: 'Press Start 2P', monospace; font-size: 8px; margin-bottom: 4px; color: #333; opacity: 0; transition: opacity 0.2s; }
   .bar-col:hover .bar-value { opacity: 1; }
   .bar-label { font-family: 'VT323', monospace; font-size: 14px; color: #555; position: absolute; bottom: -22px; text-align: center; white-space: nowrap; }
   .bar-tooltip { display: none; position: absolute; top: -40px; left: 50%; transform: translateX(-50%); background: #ffffcc; border: 1px solid #000; padding: 3px 8px; font-family: 'VT323', monospace; font-size: 15px; white-space: nowrap; z-index: 50; box-shadow: 2px 2px 0 rgba(0,0,0,0.3); }
   .bar-col:hover .bar-tooltip { display: block; }
 
-  /* === PIE === */
+  /* PIE */
   .pie-container { display: flex; align-items: center; gap: 20px; padding: 10px; flex-wrap: wrap; justify-content: center; }
   .pie-chart-wrapper { position: relative; width: 180px; height: 180px; flex-shrink: 0; }
   .pie-chart-svg { width: 180px; height: 180px; transform: rotate(-90deg); }
@@ -417,195 +154,77 @@
   .pie-legend-color { width: 14px; height: 14px; border: 1px solid #333; flex-shrink: 0; }
   .pie-detail-box { background: #ffffcc; border: 2px solid #888800; padding: 8px 12px; font-family: 'VT323', monospace; font-size: 17px; margin-top: 10px; min-height: 50px; display: flex; align-items: center; justify-content: center; text-align: center; }
 
-  /* === FUN FACTS === */
+  /* FUN FACTS */
   .fun-facts-body { padding: 12px; min-height: 120px; display: flex; flex-direction: column; justify-content: space-between; background: linear-gradient(135deg, #fff8e0, #fff0f5); }
   .fact-icon { font-size: 28px; text-align: center; margin-bottom: 8px; }
   .fact-text { font-family: 'VT323', monospace; font-size: 20px; text-align: center; color: #333; line-height: 1.3; min-height: 60px; display: flex; align-items: center; justify-content: center; }
   .fact-nav { display: flex; justify-content: center; gap: 10px; margin-top: 10px; }
   .fact-counter { font-family: 'Press Start 2P', monospace; font-size: 8px; text-align: center; color: #999; margin-top: 6px; }
 
-  /* === TOGGLES === */
+  /* TOGGLES */
   .data-toggle-group { display: flex; gap: 0; margin-bottom: 10px; }
   .data-toggle { font-family: 'IBM Plex Mono', monospace; font-size: 12px; background: var(--btn-face); border: 2px solid; border-color: var(--win-highlight) var(--win-dark-shadow) var(--win-dark-shadow) var(--win-highlight); padding: 4px 12px; }
   .data-toggle.active { border-color: var(--win-dark-shadow) var(--win-highlight) var(--win-highlight) var(--win-dark-shadow); background: #b0b0b0; padding: 5px 11px 3px 13px; }
-
   .retro-radio { display: flex; align-items: center; gap: 6px; font-family: 'VT323', monospace; font-size: 17px; padding: 3px 0; }
   .retro-radio-dot { width: 14px; height: 14px; border-radius: 50%; border: 2px solid; border-color: var(--win-shadow) var(--win-highlight) var(--win-highlight) var(--win-shadow); background: white; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
   .retro-radio.selected .retro-radio-dot::after { content: ''; width: 6px; height: 6px; border-radius: 50%; background: #000; }
 
-  /* === VISITOR COUNTER === */
   .visitor-counter { display: flex; align-items: center; justify-content: center; gap: 4px; margin: 12px 0; }
   .visitor-digit { width: 18px; height: 24px; background: #111; color: #0f0; font-family: 'VT323', monospace; font-size: 22px; display: flex; align-items: center; justify-content: center; border: 1px solid #333; }
-
   .pixel-divider { height: 8px; background: repeating-linear-gradient(90deg, var(--accent-teal) 0px, var(--accent-teal) 8px, var(--accent-magenta) 8px, var(--accent-magenta) 16px, var(--accent-yellow) 16px, var(--accent-yellow) 24px, var(--accent-purple) 24px, var(--accent-purple) 32px); image-rendering: pixelated; margin: 12px 0; }
-
   .blink { animation: blink-anim 1.2s step-end infinite; }
   @keyframes blink-anim { 0%, 100% { opacity: 1; } 50% { opacity: 0; } }
 
-  /* === MINESWEEPER === */
-  .minesweeper-grid {
-    display: grid;
-    grid-template-columns: repeat(6, 32px);
-    gap: 1px;
-    background: #808080;
-    border: 2px solid;
-    border-color: var(--win-shadow) var(--win-highlight) var(--win-highlight) var(--win-shadow);
-    padding: 1px;
-    width: fit-content;
-    margin: 8px auto;
-  }
+  /* MINESWEEPER */
+  .minesweeper-grid { display: grid; grid-template-columns: repeat(6, 32px); gap: 1px; background: #808080; border: 2px solid; border-color: var(--win-shadow) var(--win-highlight) var(--win-highlight) var(--win-shadow); padding: 1px; width: fit-content; margin: 8px auto; }
+  .minesweeper-cell { width: 32px; height: 32px; background: var(--btn-face); border: 2px solid; border-color: var(--win-highlight) var(--win-dark-shadow) var(--win-dark-shadow) var(--win-highlight); display: flex; align-items: center; justify-content: center; font-family: 'Press Start 2P', monospace; font-size: 9px; user-select: none; transition: all 0.1s; }
+  .minesweeper-cell:hover:not(.revealed) { background: #d0d0d0; }
+  .minesweeper-cell.revealed { border: 1px solid #bbb; background: #e0e0e0; font-family: 'VT323', monospace; font-size: 13px; line-height: 1.1; text-align: center; padding: 2px; }
+  .minesweeper-cell.bomb { background: #ff4444; }
+  .minesweeper-header { display: flex; justify-content: space-between; align-items: center; padding: 4px 8px; margin-bottom: 6px; }
+  .mine-counter { font-family: 'VT323', monospace; font-size: 22px; background: #1a1a2e; color: #ff3333; padding: 2px 8px; border: 1px inset #444; min-width: 40px; text-align: center; }
+  .mine-face { font-size: 20px; width: 30px; height: 30px; background: var(--btn-face); border: 2px solid; border-color: var(--win-highlight) var(--win-dark-shadow) var(--win-dark-shadow) var(--win-highlight); display: flex; align-items: center; justify-content: center; }
+  .mine-face:active { border-color: var(--win-dark-shadow) var(--win-highlight) var(--win-highlight) var(--win-dark-shadow); }
 
-  .minesweeper-cell {
-    width: 32px;
-    height: 32px;
-    background: var(--btn-face);
-    border: 2px solid;
-    border-color: var(--win-highlight) var(--win-dark-shadow) var(--win-dark-shadow) var(--win-highlight);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-family: 'Press Start 2P', monospace;
-    font-size: 9px;
-    user-select: none;
-    transition: all 0.1s;
-  }
+  /* NICKNAME */
+  .nick-input { font-family: 'VT323', monospace; font-size: 20px; border: 2px solid; border-color: var(--win-shadow) var(--win-highlight) var(--win-highlight) var(--win-shadow); padding: 4px 8px; background: white; width: 100%; outline: none; }
+  .nick-input:focus { background: #fffff0; }
+  .nick-result { font-family: 'Press Start 2P', monospace; font-size: 11px; text-align: center; padding: 12px; background: linear-gradient(135deg, #1a0a3e, #2d1066); color: #00ffcc; text-shadow: 0 0 10px rgba(0,255,204,0.5); border: 2px solid; border-color: var(--win-shadow) var(--win-highlight) var(--win-highlight) var(--win-shadow); margin-top: 8px; min-height: 50px; display: flex; align-items: center; justify-content: center; word-break: break-all; line-height: 1.5; position: relative; overflow: hidden; }
+  .nick-result .sparkle { position: absolute; color: var(--accent-yellow); font-size: 10px; animation: twinkle 1.5s infinite; }
+  .nick-copied { font-family: 'VT323', monospace; font-size: 16px; color: #00aa66; text-align: center; margin-top: 4px; height: 20px; }
 
-  .minesweeper-cell:hover:not(.revealed) {
-    background: #d0d0d0;
-  }
+  /* ZODIAC */
+  .zodiac-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 4px; margin: 8px 0; }
+  .zodiac-btn { background: var(--btn-face); border: 2px solid; border-color: var(--win-highlight) var(--win-dark-shadow) var(--win-dark-shadow) var(--win-highlight); padding: 4px 2px; text-align: center; font-family: 'VT323', monospace; font-size: 14px; line-height: 1.2; transition: all 0.1s; }
+  .zodiac-btn:hover { background: #d8d8ff; }
+  .zodiac-btn:active, .zodiac-btn.active { border-color: var(--win-dark-shadow) var(--win-highlight) var(--win-highlight) var(--win-dark-shadow); background: #b0b0ff; }
+  .zodiac-btn span { font-size: 20px; display: block; }
+  .zodiac-result { background: linear-gradient(135deg, #1a0a3e, #2d1066); color: #ffcc00; font-family: 'VT323', monospace; font-size: 18px; text-align: center; padding: 12px; border: 2px solid; border-color: var(--win-shadow) var(--win-highlight) var(--win-highlight) var(--win-shadow); margin-top: 8px; min-height: 80px; display: flex; align-items: center; justify-content: center; line-height: 1.4; text-shadow: 0 0 8px rgba(255,204,0,0.3); }
 
-  .minesweeper-cell.revealed {
-    border: 1px solid #bbb;
-    background: #e0e0e0;
-    font-family: 'VT323', monospace;
-    font-size: 13px;
-    line-height: 1.1;
-    text-align: center;
-    padding: 2px;
-  }
+  /* AGE CALCULATOR */
+  .age-input { font-family: 'VT323', monospace; font-size: 20px; border: 2px solid; border-color: var(--win-shadow) var(--win-highlight) var(--win-highlight) var(--win-shadow); padding: 4px 8px; background: white; width: 100px; outline: none; text-align: center; }
+  .age-result { background: #ffffcc; border: 2px solid #888800; padding: 10px; font-family: 'VT323', monospace; font-size: 17px; margin-top: 8px; min-height: 60px; line-height: 1.4; text-align: center; }
 
-  .minesweeper-cell.bomb {
-    background: #ff4444;
-  }
+  /* SHARE */
+  .share-bar { position: relative; z-index: 5; text-align: center; padding: 8px; background: rgba(0,0,0,0.2); }
+  .share-btn { font-family: 'IBM Plex Mono', monospace; font-size: 12px; background: var(--accent-yellow); color: #1a0a3e; border: 2px solid; border-color: #ffee66 #aa8800 #aa8800 #ffee66; padding: 6px 20px; font-weight: 600; display: inline-flex; align-items: center; gap: 6px; }
+  .share-btn:active { border-color: #aa8800 #ffee66 #ffee66 #aa8800; }
+  .share-toast { position: fixed; top: 50%; left: 50%; transform: translate(-50%,-50%); background: var(--win-bg); border: 2px solid; border-color: var(--win-highlight) var(--win-dark-shadow) var(--win-dark-shadow) var(--win-highlight); box-shadow: 4px 4px 0 rgba(0,0,0,0.3); padding: 20px 30px; font-family: 'IBM Plex Mono', monospace; font-size: 13px; z-index: 60000; display: none; text-align: center; }
+  .share-toast.visible { display: block; }
 
-  .minesweeper-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 4px 8px;
-    margin-bottom: 6px;
-  }
-
-  .mine-counter {
-    font-family: 'VT323', monospace;
-    font-size: 22px;
-    background: #1a1a2e;
-    color: #ff3333;
-    padding: 2px 8px;
-    border: 1px inset #444;
-    min-width: 40px;
-    text-align: center;
-  }
-
-  .mine-face {
-    font-size: 20px;
-    width: 30px;
-    height: 30px;
-    background: var(--btn-face);
-    border: 2px solid;
-    border-color: var(--win-highlight) var(--win-dark-shadow) var(--win-dark-shadow) var(--win-highlight);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-  }
-
-  .mine-face:active {
-    border-color: var(--win-dark-shadow) var(--win-highlight) var(--win-highlight) var(--win-dark-shadow);
-  }
-
-  /* === NICKNAME GENERATOR === */
-  .nick-input {
-    font-family: 'VT323', monospace;
-    font-size: 20px;
-    border: 2px solid;
-    border-color: var(--win-shadow) var(--win-highlight) var(--win-highlight) var(--win-shadow);
-    padding: 4px 8px;
-    background: white;
-    width: 100%;
-    outline: none;
-  }
-
-  .nick-input:focus {
-    background: #fffff0;
-  }
-
-  .nick-result {
-    font-family: 'Press Start 2P', monospace;
-    font-size: 11px;
-    text-align: center;
-    padding: 12px;
-    background: linear-gradient(135deg, #1a0a3e, #2d1066);
-    color: #00ffcc;
-    text-shadow: 0 0 10px rgba(0,255,204,0.5);
-    border: 2px solid;
-    border-color: var(--win-shadow) var(--win-highlight) var(--win-highlight) var(--win-shadow);
-    margin-top: 8px;
-    min-height: 50px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    word-break: break-all;
-    line-height: 1.5;
-    position: relative;
-    overflow: hidden;
-  }
-
-  .nick-result .sparkle {
-    position: absolute;
-    color: var(--accent-yellow);
-    font-size: 10px;
-    animation: twinkle 1.5s infinite;
-  }
-
-  .nick-lang-toggle {
-    display: flex;
-    gap: 0;
-    margin: 8px 0;
-  }
-
-  .nick-copied {
-    font-family: 'VT323', monospace;
-    font-size: 16px;
-    color: #00aa66;
-    text-align: center;
-    margin-top: 4px;
-    height: 20px;
-  }
-
-  /* === MINI CHART === */
+  /* MINI CHART */
   .mini-chart { display: flex; align-items: flex-end; gap: 4px; height: 60px; padding-top: 5px; }
   .mini-bar { flex: 1; background: var(--accent-teal); border: 1px solid rgba(0,0,0,0.2); transition: height 0.5s ease; }
   .mini-bar:nth-child(odd) { background: var(--accent-purple); }
-
   .data-table { width: 100%; border-collapse: collapse; font-family: 'VT323', monospace; font-size: 16px; }
   .data-table th { background: var(--win-title); color: white; padding: 4px 8px; text-align: left; font-weight: normal; }
   .data-table td { padding: 3px 8px; border-bottom: 1px solid #ccc; }
   .data-table tr:nth-child(even) td { background: #f0f0f8; }
   .data-table tr:hover td { background: #e0e0ff; }
-
   .construction-icon { display: inline-block; font-size: 20px; animation: constructionBounce 0.6s infinite alternate; }
   @keyframes constructionBounce { from { transform: translateY(0); } to { transform: translateY(-3px); } }
 
-  /* === SOUND TOGGLE === */
-  .sound-toggle {
-    display: flex;
-    align-items: center;
-    gap: 4px;
-    font-family: 'IBM Plex Mono', monospace;
-    font-size: 11px;
-  }
-
-  /* === TASKBAR === */
+  /* TASKBAR */
   .taskbar { position: fixed; bottom: 0; left: 0; right: 0; height: 40px; background: var(--win-bg); border-top: 2px solid var(--win-highlight); display: flex; align-items: center; padding: 2px 4px; gap: 4px; z-index: 9998; font-family: 'IBM Plex Mono', monospace; }
   .start-btn { display: flex; align-items: center; gap: 4px; background: var(--btn-face); border: 2px solid; border-color: var(--win-highlight) var(--win-dark-shadow) var(--win-dark-shadow) var(--win-highlight); padding: 3px 8px; font-family: 'IBM Plex Mono', monospace; font-size: 13px; font-weight: 600; height: 30px; }
   .start-btn:active, .start-btn.pressed { border-color: var(--win-dark-shadow) var(--win-highlight) var(--win-highlight) var(--win-dark-shadow); }
@@ -615,11 +234,10 @@
   .start-btn-logo div:nth-child(3) { background: #0000ff; }
   .start-btn-logo div:nth-child(4) { background: #ffcc00; }
   .taskbar-divider { width: 2px; height: 28px; border-left: 1px solid var(--win-shadow); border-right: 1px solid var(--win-highlight); margin: 0 2px; }
-  .taskbar-item { background: var(--btn-face); border: 2px solid; border-color: var(--win-highlight) var(--win-dark-shadow) var(--win-dark-shadow) var(--win-highlight); padding: 2px 8px; font-size: 11px; height: 28px; display: flex; align-items: center; max-width: 140px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; flex-shrink: 1; }
+  .taskbar-item { background: var(--btn-face); border: 2px solid; border-color: var(--win-highlight) var(--win-dark-shadow) var(--win-dark-shadow) var(--win-highlight); padding: 2px 6px; font-size: 10px; height: 28px; display: flex; align-items: center; max-width: 120px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; flex-shrink: 1; }
   .taskbar-item.active { border-color: var(--win-dark-shadow) var(--win-highlight) var(--win-highlight) var(--win-dark-shadow); background: #b0b0b0; }
   .taskbar-tray { margin-left: auto; display: flex; align-items: center; gap: 6px; border: 1px solid; border-color: var(--win-shadow) var(--win-highlight) var(--win-highlight) var(--win-shadow); padding: 2px 10px; height: 28px; font-size: 12px; }
   .tray-icon { font-size: 14px; }
-
   .start-menu { display: none; position: fixed; bottom: 40px; left: 0; width: 240px; background: var(--win-bg); border: 2px solid; border-color: var(--win-highlight) var(--win-dark-shadow) var(--win-dark-shadow) var(--win-highlight); z-index: 9999; font-family: 'IBM Plex Mono', monospace; font-size: 12px; }
   .start-menu.visible { display: block; }
   .start-menu-sidebar { position: absolute; left: 0; top: 0; bottom: 0; width: 24px; background: linear-gradient(0deg, #000080, #1084d0); writing-mode: vertical-rl; text-orientation: mixed; color: white; font-weight: 600; font-size: 14px; display: flex; align-items: center; justify-content: flex-end; padding-bottom: 8px; letter-spacing: 2px; }
@@ -631,47 +249,54 @@
   .windows-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; max-width: 1100px; margin: 0 auto; }
   .windows-grid .win-window { position: relative; }
   .wide-window { grid-column: 1 / -1; }
-
   .page-footer { text-align: center; padding: 20px; position: relative; z-index: 5; }
   .page-footer p { font-family: 'VT323', monospace; font-size: 16px; color: #aaffcc; text-shadow: 0 0 5px rgba(0,255,100,0.3); margin: 3px 0; }
   .construction-text { font-family: 'Press Start 2P', monospace; font-size: 9px; color: var(--accent-yellow); text-shadow: 1px 1px 0 #aa6600; }
 
   @media (max-width: 750px) {
     .windows-grid { grid-template-columns: 1fr; }
-    .banner-title { font-size: 13px; }
+    .banner-title { font-size: 12px; }
     .odometer-digit { width: 24px; height: 36px; font-size: 28px; }
     .minesweeper-grid { grid-template-columns: repeat(6, 28px); }
     .minesweeper-cell { width: 28px; height: 28px; }
+    .zodiac-grid { grid-template-columns: repeat(3, 1fr); }
   }
 </style>
 </head>
 <body>
 
-<!-- ===== LOADING SCREEN ===== -->
+<!-- BSOD -->
+<div class="bsod-screen" id="bsodScreen">
+  <div class="bsod-title" id="bsodTitle">Windows</div>
+  <div class="bsod-text" id="bsodText"></div>
+</div>
+
+<!-- LOADING -->
 <div class="loading-screen" id="loadingScreen">
-  <div class="loading-logo">
-    МИРОВОЕ БЮРО<br>СТАТИСТИКИ
-  </div>
-  <div class="loading-bar-outer">
-    <div class="loading-bar-inner" id="loadingBar"></div>
-  </div>
+  <div class="loading-logo" id="loadingLogo"></div>
+  <div class="loading-bar-outer"><div class="loading-bar-inner" id="loadingBar"></div></div>
   <div class="loading-text" id="loadingText"></div>
-  <div class="loading-modem" id="loadingModem">Модем: US Robotics 28.8 Kbps</div>
+  <div class="loading-modem" id="loadingModem"></div>
 </div>
 
 <div class="desktop-pattern"></div>
 
-<!-- ===== BANNER ===== -->
+<!-- BANNER -->
 <div class="site-banner">
   <div class="banner-stars" id="bannerStars"></div>
-  <div class="banner-title">&#127760; МИРОВОЕ БЮРО СТАТИСТИКИ &#127760;</div>
-  <div class="banner-subtitle">~ Информационный Портал v3.2 ~</div>
+  <div class="lang-switch">
+    <button class="lang-btn active" id="langRu" onclick="setLang('ru')">RU</button>
+    <button class="lang-btn" id="langEn" onclick="setLang('en')">EN</button>
+  </div>
+  <div class="banner-title" id="bannerTitle"></div>
+  <div class="banner-subtitle" id="bannerSubtitle"></div>
 </div>
 
-<div class="marquee-bar">
-  <div class="marquee-inner">
-    &#9733; ДОБРО ПОЖАЛОВАТЬ В МИРОВОЕ БЮРО СТАТИСТИКИ! &#9733; Обновлено: 14 ноября 1998 &#9733; Новые данные по потреблению кофе! &#9733; НОВИНКА: Генератор интернет-имён! &#9733; Мини-Сапёр: найди все факты! &#9733; Население Земли растёт каждую секунду! &#9733; Сайт лучше просматривать в Netscape Navigator 4.0 при разрешении 800x600 &#9733;
-  </div>
+<div class="marquee-bar"><div class="marquee-inner" id="marqueeText"></div></div>
+
+<!-- SHARE BAR -->
+<div class="share-bar">
+  <button class="share-btn" onclick="shareLink()">&#128279; <span data-t="share_btn">Поделиться ссылкой</span></button>
 </div>
 
 <div class="content-area">
@@ -679,62 +304,45 @@
 
     <!-- POPULATION -->
     <div class="win-window wide-window" id="winPopulation">
-      <div class="win-titlebar" id="drag-winPopulation">
-        <span class="win-titlebar-text">&#127758; Население Земли — Счётчик реального времени</span>
-        <div class="win-titlebar-buttons"><button class="win-btn">_</button><button class="win-btn">&#9633;</button><button class="win-btn">&#10005;</button></div>
-      </div>
+      <div class="win-titlebar"><span class="win-titlebar-text" data-t="pop_title">&#127758; Население Земли — Счётчик реального времени</span><div class="win-titlebar-buttons"><button class="win-btn">_</button><button class="win-btn">&#9633;</button><button class="win-btn">&#10005;</button></div></div>
       <div class="win-body">
         <div class="population-widget">
-          <div class="population-label">ТЕКУЩЕЕ НАСЕЛЕНИЕ ПЛАНЕТЫ ЗЕМЛЯ</div>
+          <div class="population-label" data-t="pop_label">ТЕКУЩЕЕ НАСЕЛЕНИЕ ПЛАНЕТЫ ЗЕМЛЯ</div>
           <div class="odometer" id="odometer"></div>
-          <div class="population-rate">Прирост: <span>+2.5 чел/сек</span> &bull; Источник: Бюро Глобальной Переписи, 1998</div>
+          <div class="population-rate" data-t="pop_rate">Прирост: <span>+2.5 чел/сек</span></div>
         </div>
       </div>
-      <div class="win-statusbar">
-        <div class="win-statusbar-section">Обновляется в реальном времени</div>
-        <div class="win-statusbar-section" style="flex:0;white-space:nowrap;">&#9200; LIVE</div>
-      </div>
+      <div class="win-statusbar"><div class="win-statusbar-section" data-t="pop_status">Обновляется в реальном времени</div><div class="win-statusbar-section" style="flex:0;white-space:nowrap;">&#9200; LIVE</div></div>
     </div>
 
     <!-- COFFEE -->
     <div class="win-window" id="winCoffee">
-      <div class="win-titlebar" id="drag-winCoffee">
-        <span class="win-titlebar-text">&#9749; Потребление кофе</span>
-        <div class="win-titlebar-buttons"><button class="win-btn">_</button><button class="win-btn">&#9633;</button><button class="win-btn">&#10005;</button></div>
-      </div>
-      <div class="win-menubar"><span>Файл</span><span>Вид</span><span>Данные</span><span>Помощь</span></div>
+      <div class="win-titlebar"><span class="win-titlebar-text" data-t="coffee_title">&#9749; Потребление кофе</span><div class="win-titlebar-buttons"><button class="win-btn">_</button><button class="win-btn">&#9633;</button><button class="win-btn">&#10005;</button></div></div>
+      <div class="win-menubar"><span>Файл</span><span>Вид</span><span>Данные</span></div>
       <div class="win-body" style="padding:4px;">
-        <div style="padding:4px 8px; font-size:15px; color:#555; font-family:'VT323',monospace;">Мировое потребление кофе по странам (кг/чел в год), 1997</div>
+        <div style="padding:4px 8px; font-size:15px; color:#555; font-family:'VT323',monospace;" data-t="coffee_desc">Мировое потребление кофе по странам (кг/чел в год), 1997</div>
         <div class="data-toggle-group" style="padding:0 8px;">
-          <button class="data-toggle active" onclick="toggleCoffeeView('chart', this)">&#9608; Диаграмма</button>
-          <button class="data-toggle" onclick="toggleCoffeeView('table', this)">&#9776; Таблица</button>
+          <button class="data-toggle active" onclick="toggleCoffeeView('chart', this)" data-t="toggle_chart">&#9608; Диаграмма</button>
+          <button class="data-toggle" onclick="toggleCoffeeView('table', this)" data-t="toggle_table">&#9776; Таблица</button>
         </div>
         <div id="coffeeChartView"><div class="bar-chart" id="coffeeChart"></div></div>
         <div id="coffeeTableView" style="display:none;"></div>
       </div>
-      <div class="win-statusbar"><div class="win-statusbar-section">6 стран</div><div class="win-statusbar-section" style="flex:0;white-space:nowrap;">1997</div></div>
     </div>
 
-    <!-- PETS PIE -->
+    <!-- PETS -->
     <div class="win-window" id="winPets">
-      <div class="win-titlebar" id="drag-winPets">
-        <span class="win-titlebar-text">&#128062; Домашние животные</span>
-        <div class="win-titlebar-buttons"><button class="win-btn">_</button><button class="win-btn">&#9633;</button><button class="win-btn">&#10005;</button></div>
-      </div>
+      <div class="win-titlebar"><span class="win-titlebar-text" data-t="pets_title">&#128062; Домашние животные</span><div class="win-titlebar-buttons"><button class="win-btn">_</button><button class="win-btn">&#9633;</button><button class="win-btn">&#10005;</button></div></div>
       <div class="win-body" style="padding:6px;">
-        <div style="padding:2px 6px 6px; font-size:15px; color:#555; font-family:'VT323',monospace;">Распределение домашних животных в мире, 1998</div>
+        <div style="padding:2px 6px 6px; font-size:15px; color:#555; font-family:'VT323',monospace;" data-t="pets_desc">Распределение домашних животных в мире, 1998</div>
         <div class="pie-container" id="pieContainer"></div>
-        <div class="pie-detail-box" id="pieDetail">Нажмите на сектор для подробностей</div>
+        <div class="pie-detail-box" id="pieDetail" data-t="pie_default">Нажмите на сектор для подробностей</div>
       </div>
-      <div class="win-statusbar"><div class="win-statusbar-section">Источник: Всемирная перепись животных</div></div>
     </div>
 
     <!-- MINESWEEPER -->
     <div class="win-window" id="winMine">
-      <div class="win-titlebar" id="drag-winMine">
-        <span class="win-titlebar-text">&#128163; Сапёр Знаний</span>
-        <div class="win-titlebar-buttons"><button class="win-btn">_</button><button class="win-btn">&#9633;</button><button class="win-btn">&#10005;</button></div>
-      </div>
+      <div class="win-titlebar"><span class="win-titlebar-text" data-t="mine_title">&#128163; Сапёр Знаний</span><div class="win-titlebar-buttons"><button class="win-btn">_</button><button class="win-btn">&#9633;</button><button class="win-btn">&#10005;</button></div></div>
       <div class="win-body" style="padding:6px; background:#c0c0c0;">
         <div class="minesweeper-header">
           <div class="mine-counter" id="mineCounter">5</div>
@@ -742,48 +350,59 @@
           <div class="mine-counter" id="mineTimer">0</div>
         </div>
         <div class="minesweeper-grid" id="mineGrid"></div>
-        <div style="font-family:'VT323',monospace; font-size:14px; color:#555; text-align:center; margin-top:6px;">Нажимай на ячейки — найди факты, избегай бомб!</div>
+        <div style="font-family:'VT323',monospace; font-size:14px; color:#555; text-align:center; margin-top:6px;" data-t="mine_hint">Нажимай на ячейки — найди факты, избегай бомб!</div>
       </div>
-      <div class="win-statusbar"><div class="win-statusbar-section" id="mineStatus">Готово</div></div>
     </div>
 
-    <!-- NICKNAME GENERATOR -->
+    <!-- NICKNAME -->
     <div class="win-window" id="winNick">
-      <div class="win-titlebar" id="drag-winNick">
-        <span class="win-titlebar-text">&#128640; Генератор Интернет-Имени 98</span>
-        <div class="win-titlebar-buttons"><button class="win-btn">_</button><button class="win-btn">&#9633;</button><button class="win-btn">&#10005;</button></div>
-      </div>
+      <div class="win-titlebar"><span class="win-titlebar-text" data-t="nick_title">&#128640; Генератор Интернет-Имени 98</span><div class="win-titlebar-buttons"><button class="win-btn">_</button><button class="win-btn">&#9633;</button><button class="win-btn">&#10005;</button></div></div>
       <div class="win-body" style="padding:10px;">
-        <div style="font-family:'VT323',monospace; font-size:17px; color:#555; margin-bottom:6px;">Введите ваше имя:</div>
-        <input class="nick-input" id="nickInput" type="text" placeholder="Ваше имя..." maxlength="20">
-        <div class="nick-lang-toggle">
+        <div style="font-family:'VT323',monospace; font-size:17px; color:#555; margin-bottom:6px;" data-t="nick_label">Введите ваше имя:</div>
+        <input class="nick-input" id="nickInput" type="text" maxlength="20">
+        <div class="nick-lang-toggle" style="display:flex;gap:0;margin:8px 0;">
           <button class="data-toggle active" id="nickLangRu" onclick="setNickLang('ru')">&#127479;&#127482; Русский</button>
           <button class="data-toggle" id="nickLangEn" onclick="setNickLang('en')">&#127468;&#127463; English</button>
         </div>
         <div style="display:flex; gap:6px;">
-          <button class="retro-btn" onclick="generateNick()" style="flex:1;">&#9733; Сгенерировать! &#9733;</button>
-          <button class="retro-btn" onclick="copyNick()" style="flex:0; white-space:nowrap;">&#128203; Копировать</button>
+          <button class="retro-btn" onclick="generateNick()" style="flex:1;" data-t="nick_gen">&#9733; Сгенерировать! &#9733;</button>
+          <button class="retro-btn" onclick="copyNick()" style="flex:0; white-space:nowrap;" data-t="nick_copy">&#128203; Копировать</button>
         </div>
-        <div class="nick-result" id="nickResult">
-          <span style="color:#888; font-family:'VT323',monospace; font-size:16px;">Ваш крутой ник появится здесь...</span>
-        </div>
+        <div class="nick-result" id="nickResult"><span style="color:#888; font-family:'VT323',monospace; font-size:16px;" data-t="nick_placeholder">Ваш крутой ник появится здесь...</span></div>
         <div class="nick-copied" id="nickCopied"></div>
       </div>
-      <div class="win-statusbar"><div class="win-statusbar-section">Придумай себе ник для IRC/ICQ!</div></div>
+    </div>
+
+    <!-- HOROSCOPE -->
+    <div class="win-window" id="winHoroscope">
+      <div class="win-titlebar"><span class="win-titlebar-text" data-t="horo_title">&#128302; Гороскоп на 1998 год</span><div class="win-titlebar-buttons"><button class="win-btn">_</button><button class="win-btn">&#9633;</button><button class="win-btn">&#10005;</button></div></div>
+      <div class="win-body" style="padding:8px;">
+        <div style="font-family:'VT323',monospace; font-size:16px; color:#555; margin-bottom:4px;" data-t="horo_label">Выберите ваш знак зодиака:</div>
+        <div class="zodiac-grid" id="zodiacGrid"></div>
+        <div class="zodiac-result" id="zodiacResult" data-t="horo_placeholder">&#10024; Выберите знак, чтобы узнать судьбу &#10024;</div>
+      </div>
+    </div>
+
+    <!-- AGE CALCULATOR -->
+    <div class="win-window" id="winAge">
+      <div class="win-titlebar"><span class="win-titlebar-text" data-t="age_title">&#128197; Калькулятор интернет-возраста</span><div class="win-titlebar-buttons"><button class="win-btn">_</button><button class="win-btn">&#9633;</button><button class="win-btn">&#10005;</button></div></div>
+      <div class="win-body" style="padding:10px; text-align:center;">
+        <div style="font-family:'VT323',monospace; font-size:17px; color:#555; margin-bottom:8px;" data-t="age_label">Введите год вашего рождения:</div>
+        <input class="age-input" id="ageInput" type="number" min="1900" max="2010" value="1990">
+        <div style="margin-top:8px;"><button class="retro-btn" onclick="calcAge()" data-t="age_calc">Рассчитать!</button></div>
+        <div class="age-result" id="ageResult" data-t="age_placeholder">Узнайте, старше ли вы интернета!</div>
+      </div>
     </div>
 
     <!-- FUN FACTS -->
     <div class="win-window" id="winFacts">
-      <div class="win-titlebar" id="drag-winFacts">
-        <span class="win-titlebar-text">&#128161; Интересные факты</span>
-        <div class="win-titlebar-buttons"><button class="win-btn">_</button><button class="win-btn">&#9633;</button><button class="win-btn">&#10005;</button></div>
-      </div>
+      <div class="win-titlebar"><span class="win-titlebar-text" data-t="facts_title">&#128161; Интересные факты</span><div class="win-titlebar-buttons"><button class="win-btn">_</button><button class="win-btn">&#9633;</button><button class="win-btn">&#10005;</button></div></div>
       <div class="fun-facts-body">
         <div class="fact-icon" id="factIcon">&#128202;</div>
         <div class="fact-text" id="factText"></div>
         <div class="fact-nav">
-          <button class="retro-btn" onclick="prevFact()">&#9664; Назад</button>
-          <button class="retro-btn" onclick="nextFact()">Далее &#9654;</button>
+          <button class="retro-btn" onclick="prevFact()" data-t="fact_prev">&#9664; Назад</button>
+          <button class="retro-btn" onclick="nextFact()" data-t="fact_next">Далее &#9654;</button>
         </div>
         <div class="fact-counter" id="factCounter"></div>
       </div>
@@ -791,46 +410,27 @@
 
     <!-- EXTRA DATA -->
     <div class="win-window" id="winExtra">
-      <div class="win-titlebar" id="drag-winExtra">
-        <span class="win-titlebar-text">&#128200; Дополнительные данные</span>
-        <div class="win-titlebar-buttons"><button class="win-btn">_</button><button class="win-btn">&#9633;</button><button class="win-btn">&#10005;</button></div>
-      </div>
+      <div class="win-titlebar"><span class="win-titlebar-text" data-t="extra_title">&#128200; Дополнительные данные</span><div class="win-titlebar-buttons"><button class="win-btn">_</button><button class="win-btn">&#9633;</button><button class="win-btn">&#10005;</button></div></div>
       <div class="win-body" style="padding:10px;">
-        <div style="font-family:'VT323',monospace; font-size:16px; margin-bottom:8px; color:#555;">Выберите категорию:</div>
+        <div style="font-family:'VT323',monospace; font-size:16px; margin-bottom:8px; color:#555;" data-t="extra_label">Выберите категорию:</div>
         <div id="extraRadios"></div>
         <div class="pixel-divider"></div>
         <div class="mini-chart" id="extraChart"></div>
         <div style="font-family:'VT323',monospace; font-size:14px; color:#888; margin-top:6px; text-align:center;" id="extraLabel"></div>
       </div>
-      <div class="win-statusbar"><div class="win-statusbar-section" id="extraStatus">Готово</div></div>
     </div>
 
     <!-- ABOUT -->
     <div class="win-window" id="winAbout">
-      <div class="win-titlebar" id="drag-winAbout">
-        <span class="win-titlebar-text">&#128196; О портале</span>
-        <div class="win-titlebar-buttons"><button class="win-btn">_</button><button class="win-btn">&#9633;</button><button class="win-btn">&#10005;</button></div>
-      </div>
+      <div class="win-titlebar"><span class="win-titlebar-text" data-t="about_title">&#128196; О портале</span><div class="win-titlebar-buttons"><button class="win-btn">_</button><button class="win-btn">&#9633;</button><button class="win-btn">&#10005;</button></div></div>
       <div class="win-body" style="text-align:center; padding:12px;">
-        <div style="font-family:'Press Start 2P',monospace; font-size:9px; color:var(--accent-purple); margin-bottom:10px;">&#127760; МИРОВОЕ БЮРО СТАТИСТИКИ &#127760;</div>
-        <div style="font-family:'VT323',monospace; font-size:17px; color:#555; line-height:1.4;">
-          Добро пожаловать на наш информационный портал!<br>
-          Здесь вы найдёте самые актуальные данные<br>
-          о жизни нашей планеты.<br><br>
-          <span class="construction-icon">&#128679;</span>
-          <span class="construction-text blink">РАЗДЕЛ В РАЗРАБОТКЕ</span>
-          <span class="construction-icon">&#128679;</span>
-        </div>
+        <div style="font-family:'Press Start 2P',monospace; font-size:9px; color:var(--accent-purple); margin-bottom:10px;" data-t="about_heading">&#127760; МИРОВОЕ БЮРО СТАТИСТИКИ &#127760;</div>
+        <div style="font-family:'VT323',monospace; font-size:17px; color:#555; line-height:1.4;" data-t="about_text">Добро пожаловать на наш информационный портал!<br>Здесь вы найдёте самые актуальные данные<br>о жизни нашей планеты.</div>
+        <div style="margin:10px 0;"><span class="construction-icon">&#128679;</span> <span class="construction-text blink" data-t="about_wip">РАЗДЕЛ В РАЗРАБОТКЕ</span> <span class="construction-icon">&#128679;</span></div>
         <div class="pixel-divider"></div>
-        <div style="font-family:'VT323',monospace; font-size:16px; color:#777;">Вы — посетитель номер:</div>
+        <div style="font-family:'VT323',monospace; font-size:16px; color:#777;" data-t="about_visitor">Вы — посетитель номер:</div>
         <div class="visitor-counter" id="visitorCounter"></div>
-        <div style="font-family:'VT323',monospace; font-size:14px; color:#999; margin-top:6px;">
-          Последнее обновление: 14.11.1998<br>
-          Лучший просмотр: 800&#215;600, 256 цветов<br>
-          Совместим с Netscape Navigator 4.0+<br>
-          <br>
-          <a href="#" style="color:var(--accent-blue);">&#128231; Написать веб-мастеру</a>
-        </div>
+        <div style="font-family:'VT323',monospace; font-size:14px; color:#999; margin-top:6px;" data-t="about_footer">Последнее обновление: 14.11.1998<br>Лучший просмотр: 800&times;600, 256 цветов<br>Netscape Navigator 4.0+</div>
       </div>
     </div>
 
@@ -839,812 +439,388 @@
 
 <div class="page-footer">
   <div class="pixel-divider" style="max-width:400px;margin:0 auto 12px;"></div>
-  <p>&copy; 1997-1998 Мировое Бюро Статистики. Все права защищены.</p>
-  <p style="font-size:14px;">Сделано с &#9829; для сети Интернет</p>
+  <p data-t="footer_copy">&copy; 1997-1998 Мировое Бюро Статистики. Все права защищены.</p>
+  <p style="font-size:14px;" data-t="footer_love">Сделано с &#9829; для сети Интернет</p>
 </div>
+
+<!-- SHARE TOAST -->
+<div class="share-toast" id="shareToast" data-t="share_toast">&#10004; Ссылка скопирована!</div>
 
 <!-- TASKBAR -->
 <div class="taskbar">
   <button class="start-btn" id="startBtn" onclick="toggleStartMenu()">
     <div class="start-btn-logo"><div></div><div></div><div></div><div></div></div>
-    Пуск
+    <span data-t="start">Пуск</span>
   </button>
   <div class="taskbar-divider"></div>
-  <div class="taskbar-item active" onclick="focusWin('winPopulation')">&#127758; Население</div>
-  <div class="taskbar-item" onclick="focusWin('winCoffee')">&#9749; Кофе</div>
-  <div class="taskbar-item" onclick="focusWin('winMine')">&#128163; Сапёр</div>
-  <div class="taskbar-item" onclick="focusWin('winNick')">&#128640; Ник</div>
+  <div class="taskbar-item active" onclick="focusWin('winPopulation')">&#127758;</div>
+  <div class="taskbar-item" onclick="focusWin('winMine')">&#128163;</div>
+  <div class="taskbar-item" onclick="focusWin('winNick')">&#128640;</div>
+  <div class="taskbar-item" onclick="focusWin('winHoroscope')">&#128302;</div>
+  <div class="taskbar-item" onclick="focusWin('winAge')">&#128197;</div>
   <div class="taskbar-divider"></div>
   <div class="taskbar-tray">
-    <span class="tray-icon" id="soundToggle" title="Звук" onclick="toggleSound()">&#128266;</span>
-    <span class="tray-icon" title="Сеть">&#127760;</span>
+    <span class="tray-icon" id="soundToggle" title="Sound" onclick="toggleSound()">&#128266;</span>
+    <span class="tray-icon">&#127760;</span>
     <span id="trayClock" style="font-size:12px;"></span>
   </div>
 </div>
 
 <!-- START MENU -->
 <div class="start-menu" id="startMenu">
-  <div class="start-menu-sidebar">Статистика98</div>
-  <div class="start-menu-items">
-    <div class="start-menu-item" onclick="focusWin('winPopulation'); toggleStartMenu();">&#127758; Население Земли</div>
-    <div class="start-menu-item" onclick="focusWin('winCoffee'); toggleStartMenu();">&#9749; Потребление кофе</div>
-    <div class="start-menu-item" onclick="focusWin('winPets'); toggleStartMenu();">&#128062; Домашние животные</div>
-    <div class="start-menu-item" onclick="focusWin('winMine'); toggleStartMenu();">&#128163; Сапёр Знаний</div>
-    <div class="start-menu-item" onclick="focusWin('winNick'); toggleStartMenu();">&#128640; Генератор ника</div>
-    <div class="start-menu-item" onclick="focusWin('winFacts'); toggleStartMenu();">&#128161; Интересные факты</div>
-    <div class="start-menu-item" onclick="focusWin('winExtra'); toggleStartMenu();">&#128200; Дополнительные данные</div>
-    <div class="start-menu-divider"></div>
-    <div class="start-menu-item" onclick="focusWin('winAbout'); toggleStartMenu();">&#128196; О портале</div>
-    <div class="start-menu-divider"></div>
-    <div class="start-menu-item" onclick="toggleStartMenu();">&#128721; Завершение работы...</div>
-  </div>
+  <div class="start-menu-sidebar">Stats98</div>
+  <div class="start-menu-items" id="startMenuItems"></div>
 </div>
 
 <script>
-// ==============================
-// SOUND ENGINE (Web Audio API)
-// ==============================
-let soundEnabled = true;
-let audioCtx = null;
+// ===================== i18n =====================
+let lang = 'ru';
 
-function getAudioCtx() {
-  if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-  return audioCtx;
-}
-
-function playClick() {
-  if (!soundEnabled) return;
-  try {
-    const ctx = getAudioCtx();
-    const o = ctx.createOscillator();
-    const g = ctx.createGain();
-    o.type = 'square';
-    o.frequency.setValueAtTime(800, ctx.currentTime);
-    o.frequency.exponentialRampToValueAtTime(400, ctx.currentTime + 0.05);
-    g.gain.setValueAtTime(0.15, ctx.currentTime);
-    g.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.06);
-    o.connect(g).connect(ctx.destination);
-    o.start(ctx.currentTime);
-    o.stop(ctx.currentTime + 0.06);
-  } catch(e) {}
-}
-
-function playError() {
-  if (!soundEnabled) return;
-  try {
-    const ctx = getAudioCtx();
-    [440, 349].forEach((freq, i) => {
-      const o = ctx.createOscillator();
-      const g = ctx.createGain();
-      o.type = 'square';
-      o.frequency.value = freq;
-      g.gain.setValueAtTime(0.12, ctx.currentTime + i * 0.18);
-      g.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + i * 0.18 + 0.16);
-      o.connect(g).connect(ctx.destination);
-      o.start(ctx.currentTime + i * 0.18);
-      o.stop(ctx.currentTime + i * 0.18 + 0.16);
-    });
-  } catch(e) {}
-}
-
-function playStartup() {
-  if (!soundEnabled) return;
-  try {
-    const ctx = getAudioCtx();
-    const notes = [523, 659, 784, 1047];
-    notes.forEach((freq, i) => {
-      const o = ctx.createOscillator();
-      const g = ctx.createGain();
-      o.type = 'sine';
-      o.frequency.value = freq;
-      g.gain.setValueAtTime(0, ctx.currentTime + i * 0.15);
-      g.gain.linearRampToValueAtTime(0.1, ctx.currentTime + i * 0.15 + 0.05);
-      g.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + i * 0.15 + 0.4);
-      o.connect(g).connect(ctx.destination);
-      o.start(ctx.currentTime + i * 0.15);
-      o.stop(ctx.currentTime + i * 0.15 + 0.4);
-    });
-  } catch(e) {}
-}
-
-function playReveal() {
-  if (!soundEnabled) return;
-  try {
-    const ctx = getAudioCtx();
-    const o = ctx.createOscillator();
-    const g = ctx.createGain();
-    o.type = 'triangle';
-    o.frequency.setValueAtTime(600, ctx.currentTime);
-    o.frequency.exponentialRampToValueAtTime(900, ctx.currentTime + 0.08);
-    g.gain.setValueAtTime(0.1, ctx.currentTime);
-    g.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.1);
-    o.connect(g).connect(ctx.destination);
-    o.start(ctx.currentTime);
-    o.stop(ctx.currentTime + 0.1);
-  } catch(e) {}
-}
-
-function playBoom() {
-  if (!soundEnabled) return;
-  try {
-    const ctx = getAudioCtx();
-    const o = ctx.createOscillator();
-    const g = ctx.createGain();
-    o.type = 'sawtooth';
-    o.frequency.setValueAtTime(200, ctx.currentTime);
-    o.frequency.exponentialRampToValueAtTime(30, ctx.currentTime + 0.3);
-    g.gain.setValueAtTime(0.2, ctx.currentTime);
-    g.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.3);
-    o.connect(g).connect(ctx.destination);
-    o.start(ctx.currentTime);
-    o.stop(ctx.currentTime + 0.3);
-  } catch(e) {}
-}
-
-function playNickGen() {
-  if (!soundEnabled) return;
-  try {
-    const ctx = getAudioCtx();
-    const notes = [523, 784, 1047, 784, 1047];
-    notes.forEach((freq, i) => {
-      const o = ctx.createOscillator();
-      const g = ctx.createGain();
-      o.type = 'square';
-      o.frequency.value = freq;
-      g.gain.setValueAtTime(0.06, ctx.currentTime + i * 0.06);
-      g.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + i * 0.06 + 0.06);
-      o.connect(g).connect(ctx.destination);
-      o.start(ctx.currentTime + i * 0.06);
-      o.stop(ctx.currentTime + i * 0.06 + 0.06);
-    });
-  } catch(e) {}
-}
-
-function toggleSound() {
-  soundEnabled = !soundEnabled;
-  document.getElementById('soundToggle').innerHTML = soundEnabled ? '&#128266;' : '&#128264;';
-  if (soundEnabled) playClick();
-}
-
-// Add click sound to all buttons
-document.addEventListener('click', e => {
-  if (e.target.closest('.retro-btn, .win-btn, .start-btn, .data-toggle, .taskbar-item, .start-menu-item')) {
-    playClick();
+const T = {
+  ru: {
+    banner_title: '&#127760; МИРОВОЕ БЮРО СТАТИСТИКИ &#127760;',
+    banner_sub: '~ Информационный Портал v3.2 ~',
+    marquee: '&#9733; ДОБРО ПОЖАЛОВАТЬ В МИРОВОЕ БЮРО СТАТИСТИКИ! &#9733; Обновлено: 14 ноября 1998 &#9733; Новые данные по потреблению кофе! &#9733; Мини-Сапёр: найди все факты! &#9733; Генератор интернет-имён! &#9733; Гороскоп на 1998! &#9733; Сайт лучше просматривать в Netscape Navigator 4.0 при разрешении 800x600 &#9733;',
+    loading_logo: 'МИРОВОЕ БЮРО<br>СТАТИСТИКИ',
+    loading_modem: 'Модем: US Robotics 28.8 Kbps',
+    loading_steps: ['Инициализация модема...','Набор номера: 8-495-123-45-67...','Соединение... bzzz krrr shhhh...','Подключено! 28,800 bps','Запрос DNS: stats98.narod.ru...','Загрузка HTML документа...','Загрузка графики (1 из 4)...','Загрузка графики (3 из 4)...','Загрузка скриптов JavaScript...','Обработка стилей CSS...','Готово!'],
+    pop_title: '&#127758; Население Земли — Счётчик реального времени',
+    pop_label: 'ТЕКУЩЕЕ НАСЕЛЕНИЕ ПЛАНЕТЫ ЗЕМЛЯ',
+    pop_rate: 'Прирост: <span>+2.5 чел/сек</span>',
+    pop_status: 'Обновляется в реальном времени',
+    coffee_title: '&#9749; Потребление кофе', coffee_desc: 'Мировое потребление кофе по странам (кг/чел в год), 1997',
+    toggle_chart: '&#9608; Диаграмма', toggle_table: '&#9776; Таблица',
+    pets_title: '&#128062; Домашние животные', pets_desc: 'Распределение домашних животных в мире, 1998',
+    pie_default: 'Нажмите на сектор для подробностей',
+    mine_title: '&#128163; Сапёр Знаний', mine_hint: 'Нажимай на ячейки — найди факты, избегай бомб!', mine_boom: 'БУМ! Попробуйте ещё раз', mine_win: 'Победа! Все факты найдены!',
+    nick_title: '&#128640; Генератор Интернет-Имени 98', nick_label: 'Введите ваше имя:', nick_gen: '&#9733; Сгенерировать! &#9733;', nick_copy: '&#128203; Копировать', nick_placeholder: 'Ваш крутой ник появится здесь...', nick_copied: '✓ Скопировано!',
+    horo_title: '&#128302; Гороскоп на 1998 год', horo_label: 'Выберите ваш знак зодиака:', horo_placeholder: '&#10024; Выберите знак, чтобы узнать судьбу &#10024;',
+    age_title: '&#128197; Калькулятор интернет-возраста', age_label: 'Введите год вашего рождения:', age_calc: 'Рассчитать!', age_placeholder: 'Узнайте, старше ли вы интернета!',
+    facts_title: '&#128161; Интересные факты', fact_prev: '&#9664; Назад', fact_next: 'Далее &#9654;',
+    extra_title: '&#128200; Дополнительные данные', extra_label: 'Выберите категорию:',
+    about_title: '&#128196; О портале', about_heading: '&#127760; МИРОВОЕ БЮРО СТАТИСТИКИ &#127760;',
+    about_text: 'Добро пожаловать на наш информационный портал!<br>Здесь вы найдёте самые актуальные данные<br>о жизни нашей планеты.',
+    about_wip: 'РАЗДЕЛ В РАЗРАБОТКЕ', about_visitor: 'Вы — посетитель номер:',
+    about_footer: 'Последнее обновление: 14.11.1998<br>Лучший просмотр: 800&times;600, 256 цветов<br>Netscape Navigator 4.0+',
+    footer_copy: '&copy; 1997-1998 Мировое Бюро Статистики. Все права защищены.', footer_love: 'Сделано с &#9829; для сети Интернет',
+    share_btn: 'Поделиться ссылкой', share_toast: '&#10004; Ссылка скопирована!',
+    start: 'Пуск', ready: 'Готово',
+    bsod_title: 'Windows', bsod_text: 'Произошла фатальная ошибка в модуле STATS98.DLL<br><br>ИСКЛЮЧЕНИЕ 0E : 016F:BFF9B3D4<br><br>* Нажмите любую клавишу для перезагрузки.<br>* Нажмите CTRL+ALT+DEL для перезагрузки компьютера.<br><br>Вы потеряете все несохранённые данные.',
+    start_menu: [
+      {icon:'&#127758;',text:'Население Земли',win:'winPopulation'},{icon:'&#9749;',text:'Потребление кофе',win:'winCoffee'},{icon:'&#128062;',text:'Домашние животные',win:'winPets'},
+      {icon:'&#128163;',text:'Сапёр Знаний',win:'winMine'},{icon:'&#128640;',text:'Генератор ника',win:'winNick'},{icon:'&#128302;',text:'Гороскоп 1998',win:'winHoroscope'},
+      {icon:'&#128197;',text:'Интернет-возраст',win:'winAge'},{icon:'&#128161;',text:'Интересные факты',win:'winFacts'},{icon:'&#128200;',text:'Дополнительные данные',win:'winExtra'},
+      {icon:'&#128196;',text:'О портале',win:'winAbout'}
+    ],
+    zodiac: ['Овен','Телец','Близнецы','Рак','Лев','Дева','Весы','Скорпион','Стрелец','Козерог','Водолей','Рыбы'],
+    horoscopes: [
+      'Овен: В 1998 году ваш модем наконец-то подключится с первого раза. Звёзды советуют: не открывайте вложения от незнакомцев.',
+      'Телец: Ваш Тамагочи проживёт до весны! Юпитер обещает скидку на второй CD-ROM.',
+      'Близнецы: ICQ принесёт вам новых друзей из 14 стран. Остерегайтесь цепочных писем — они НЕ приносят удачу.',
+      'Рак: Звёзды говорят: пора обновить Windows 95 до 98. Любовное послание ждёт вас на chat.ru.',
+      'Лев: Ваша домашняя страничка на Narod.ru станет хитом! 500 посетителей к Новому году — это реально.',
+      'Дева: Венера советует: организуйте папку «Мои документы». Идеальный порядок — ваш путь к звёздам.',
+      'Весы: Выбор между Netscape и Internet Explorer определит вашу судьбу. Звёзды рекомендуют: Netscape Navigator.',
+      'Скорпион: Тайна скрыта в исходном коде. Нажмите Ctrl+U и обретёте просветление. Осторожно с дискетами!',
+      'Стрелец: Путешествие по Всемирной Паутине приведёт вас на сайт мечты. Yahoo! будет вашим проводником.',
+      'Козерог: Ваш 56k модем — инвестиция года! Марс обещает: файл в 5 МБ скачается менее чем за час.',
+      'Водолей: Вы создадите революционный скрипт на JavaScript. Мир ещё не готов к вашему гостевому чату.',
+      'Рыбы: Интуиция подскажет правильный пароль. Нептун шепчет: qwerty123 — это ненадёжно. Меняйте!'
+    ],
+    pet_names: ['Кошки','Собаки','Рыбки','Птицы','Грызуны','Другие'],
+    pet_details: ['&#128049; Кошки — 35%. Более 600 млн по всему миру!','&#128054; Собаки — 28%. Лучший друг человека уже 15,000 лет.','&#128032; Рыбки — 18%. Третье по популярности хобби в мире.','&#128038; Птицы — 10%. Попугаи запоминают до 1,500 слов.','&#128057; Грызуны — 6%. Хомячки, морские свинки и другие.','&#128034; Другие — 3%. Черепахи, змеи, хорьки.'],
+    funfacts: [
+      {i:'&#128202;',t:'Каждую секунду в мире выпивают 26,000 чашек кофе.'},{i:'&#127757;',t:'Земля вращается со скоростью 1,670 км/ч на экваторе.'},{i:'&#128037;',t:'Муравьи могут поднять вес в 50 раз больше собственного.'},
+      {i:'&#9889;',t:'Молния бьёт в Землю около 100 раз в секунду.'},{i:'&#128171;',t:'Интернет-трафик в 1998 — около 1 ГБ/сек.'},{i:'&#127775;',t:'Ближайшая звезда — Проксима Центавра (4.24 св. года).'},
+      {i:'&#128218;',t:'В Библиотеке Конгресса более 170 млн единиц.'},{i:'&#127754;',t:'Океаны содержат 97% воды на Земле.'},{i:'&#128640;',t:'Свет от Солнца до Земли идёт 8 мин 20 сек.'},{i:'&#127836;',t:'Итальянцы съедают 26 кг макарон/чел в год.'}
+    ],
+    extra_cats: ['Интернет-пользователи (млн)','Мобильные телефоны (млн)','Выбросы CO₂ (млрд тонн)'],
+    age_results: (year) => {
+      const age = 1998 - year;
+      const milestones = [];
+      if (year <= 1969) milestones.push('&#128640; Вы старше ARPANET (1969)! Вы — ровесник самого интернета.');
+      if (year <= 1971) milestones.push('&#128231; Вы старше электронной почты (1971)!');
+      if (year <= 1983) milestones.push('&#128421; Вы старше доменных имён (1983)!');
+      if (year <= 1990) milestones.push('&#127760; Вы старше WWW (1990)!');
+      if (year <= 1993) milestones.push('&#128196; Вы старше первого браузера Mosaic (1993)!');
+      if (year <= 1994) milestones.push('&#128722; Вы старше Amazon (1994) и Yahoo! (1994)!');
+      if (year <= 1995) milestones.push('&#128187; Вы старше JavaScript (1995) и Windows 95!');
+      if (year <= 1996) milestones.push('&#128172; Вы старше ICQ (1996)!');
+      if (year <= 1998) milestones.push('&#128270; Вы старше Google (1998)!');
+      if (year > 1998) milestones.push('&#128118; Вы младше Google! В 1998 вам ещё не было на свете.');
+      return `&#127874; Вам ${age} лет в 1998 году.<br><br>${milestones.join('<br>')}`;
+    },
+    error_msgs: [
+      {title:'Ошибка памяти',icon:'&#9888;',text:'Недостаточно памяти для отображения статистики.<br>Доступно: 4,096 КБ из 16,384 КБ'},
+      {title:'Ошибка сети',icon:'&#9888;',text:'Сервер статистики не отвечает.<br>Ошибка 408: Request Timeout'},
+      {title:'Internet Explorer',icon:'&#128308;',text:'Программа выполнила недопустимую операцию.<br>IEXPLORE: ошибка в модуле STATS98.DLL'},
+      {title:'Dr. Watson',icon:'&#128270;',text:'Непредвиденная ошибка в «Бюро Статистики».<br>Отправить отчёт? (нужен Интернет)'},
+    ],
+  },
+  en: {
+    banner_title: '&#127760; WORLD STATISTICS BUREAU &#127760;',
+    banner_sub: '~ Information Portal v3.2 ~',
+    marquee: '&#9733; WELCOME TO THE WORLD STATISTICS BUREAU! &#9733; Updated: November 14, 1998 &#9733; New coffee consumption data! &#9733; Knowledge Minesweeper: find all facts! &#9733; Internet Name Generator! &#9733; 1998 Horoscope! &#9733; Best viewed in Netscape Navigator 4.0 at 800x600 &#9733;',
+    loading_logo: 'WORLD STATISTICS<br>BUREAU',
+    loading_modem: 'Modem: US Robotics 28.8 Kbps',
+    loading_steps: ['Initializing modem...','Dialing: 1-800-555-0198...','Connecting... bzzz krrr shhhh...','Connected! 28,800 bps','DNS lookup: stats98.geocities.com...','Loading HTML document...','Loading graphics (1 of 4)...','Loading graphics (3 of 4)...','Loading JavaScript...','Processing CSS styles...','Done!'],
+    pop_title: '&#127758; World Population — Real-time Counter',
+    pop_label: 'CURRENT POPULATION OF PLANET EARTH',
+    pop_rate: 'Growth: <span>+2.5 ppl/sec</span>',
+    pop_status: 'Updating in real-time',
+    coffee_title: '&#9749; Coffee Consumption', coffee_desc: 'World coffee consumption by country (kg/person/year), 1997',
+    toggle_chart: '&#9608; Chart', toggle_table: '&#9776; Table',
+    pets_title: '&#128062; Pets', pets_desc: 'World pet distribution, 1998',
+    pie_default: 'Click a segment for details',
+    mine_title: '&#128163; Knowledge Minesweeper', mine_hint: 'Click cells — discover facts, avoid bombs!', mine_boom: 'BOOM! Try again', mine_win: 'Victory! All facts found!',
+    nick_title: '&#128640; Internet Name Generator 98', nick_label: 'Enter your name:', nick_gen: '&#9733; Generate! &#9733;', nick_copy: '&#128203; Copy', nick_placeholder: 'Your cool nickname will appear here...', nick_copied: '✓ Copied!',
+    horo_title: '&#128302; 1998 Horoscope', horo_label: 'Choose your zodiac sign:', horo_placeholder: '&#10024; Choose a sign to reveal your destiny &#10024;',
+    age_title: '&#128197; Internet Age Calculator', age_label: 'Enter your birth year:', age_calc: 'Calculate!', age_placeholder: 'Find out if you\'re older than the Internet!',
+    facts_title: '&#128161; Fun Facts', fact_prev: '&#9664; Back', fact_next: 'Next &#9654;',
+    extra_title: '&#128200; Additional Data', extra_label: 'Choose a category:',
+    about_title: '&#128196; About', about_heading: '&#127760; WORLD STATISTICS BUREAU &#127760;',
+    about_text: 'Welcome to our information portal!<br>Here you\'ll find the latest data<br>about life on our planet.',
+    about_wip: 'UNDER CONSTRUCTION', about_visitor: 'You are visitor number:',
+    about_footer: 'Last updated: 11/14/1998<br>Best viewed: 800&times;600, 256 colors<br>Netscape Navigator 4.0+',
+    footer_copy: '&copy; 1997-1998 World Statistics Bureau. All rights reserved.', footer_love: 'Made with &#9829; for the World Wide Web',
+    share_btn: 'Share link', share_toast: '&#10004; Link copied!',
+    start: 'Start', ready: 'Ready',
+    bsod_title: 'Windows', bsod_text: 'A fatal exception has occurred in module STATS98.DLL<br><br>EXCEPTION 0E : 016F:BFF9B3D4<br><br>* Press any key to restart.<br>* Press CTRL+ALT+DEL to restart your computer.<br><br>You will lose any unsaved data.',
+    start_menu: [
+      {icon:'&#127758;',text:'World Population',win:'winPopulation'},{icon:'&#9749;',text:'Coffee Consumption',win:'winCoffee'},{icon:'&#128062;',text:'Pets',win:'winPets'},
+      {icon:'&#128163;',text:'Minesweeper',win:'winMine'},{icon:'&#128640;',text:'Name Generator',win:'winNick'},{icon:'&#128302;',text:'1998 Horoscope',win:'winHoroscope'},
+      {icon:'&#128197;',text:'Internet Age',win:'winAge'},{icon:'&#128161;',text:'Fun Facts',win:'winFacts'},{icon:'&#128200;',text:'Extra Data',win:'winExtra'},
+      {icon:'&#128196;',text:'About',win:'winAbout'}
+    ],
+    zodiac: ['Aries','Taurus','Gemini','Cancer','Leo','Virgo','Libra','Scorpio','Sagittarius','Capricorn','Aquarius','Pisces'],
+    horoscopes: [
+      'Aries: In 1998 your modem will finally connect on the first try. The stars advise: don\'t open attachments from strangers.',
+      'Taurus: Your Tamagotchi will survive until spring! Jupiter promises a discount on a second CD-ROM.',
+      'Gemini: ICQ will bring you new friends from 14 countries. Beware of chain emails — they do NOT bring luck.',
+      'Cancer: The stars say: time to upgrade from Windows 95 to 98. A love letter awaits you on AOL.',
+      'Leo: Your GeoCities homepage will become a hit! 500 visitors by New Year — totally realistic.',
+      'Virgo: Venus advises: organize your "My Documents" folder. Perfect order is your path to the stars.',
+      'Libra: The choice between Netscape and Internet Explorer will determine your fate. Stars recommend: Netscape Navigator.',
+      'Scorpio: The secret is hidden in the source code. Press Ctrl+U and find enlightenment. Be careful with floppy disks!',
+      'Sagittarius: Surfing the World Wide Web will lead you to a dream website. Yahoo! will be your guide.',
+      'Capricorn: Your 56k modem is the investment of the year! Mars promises: a 5 MB file will download in under an hour.',
+      'Aquarius: You will create a revolutionary JavaScript. The world isn\'t ready for your guest chat.',
+      'Pisces: Intuition will guide the right password. Neptune whispers: qwerty123 is not secure. Change it!'
+    ],
+    pet_names: ['Cats','Dogs','Fish','Birds','Rodents','Other'],
+    pet_details: ['&#128049; Cats — 35%. Over 600 million worldwide!','&#128054; Dogs — 28%. Man\'s best friend for 15,000 years.','&#128032; Fish — 18%. 3rd most popular hobby in the world.','&#128038; Birds — 10%. Parrots can learn up to 1,500 words.','&#128057; Rodents — 6%. Hamsters, guinea pigs and more.','&#128034; Other — 3%. Turtles, snakes, ferrets.'],
+    funfacts: [
+      {i:'&#128202;',t:'Every second, 26,000 cups of coffee are consumed worldwide.'},{i:'&#127757;',t:'Earth rotates at 1,670 km/h at the equator.'},{i:'&#128037;',t:'Ants can lift 50 times their own weight.'},
+      {i:'&#9889;',t:'Lightning strikes Earth about 100 times per second.'},{i:'&#128171;',t:'Global internet traffic in 1998 was ~1 GB/sec.'},{i:'&#127775;',t:'The nearest star is Proxima Centauri (4.24 light years).'},
+      {i:'&#128218;',t:'The Library of Congress has over 170 million items.'},{i:'&#127754;',t:'Oceans contain 97% of all water on Earth.'},{i:'&#128640;',t:'Light from the Sun takes 8 min 20 sec to reach Earth.'},{i:'&#127836;',t:'Italians eat 26 kg of pasta per person per year.'}
+    ],
+    extra_cats: ['Internet users (millions)','Mobile phones (millions)','CO₂ emissions (billion tons)'],
+    age_results: (year) => {
+      const age = 1998 - year;
+      const m = [];
+      if (year <= 1969) m.push('&#128640; You\'re older than ARPANET (1969)! You\'re as old as the Internet itself.');
+      if (year <= 1971) m.push('&#128231; You\'re older than email (1971)!');
+      if (year <= 1983) m.push('&#128421; You\'re older than domain names (1983)!');
+      if (year <= 1990) m.push('&#127760; You\'re older than the WWW (1990)!');
+      if (year <= 1993) m.push('&#128196; You\'re older than Mosaic browser (1993)!');
+      if (year <= 1994) m.push('&#128722; You\'re older than Amazon (1994) & Yahoo! (1994)!');
+      if (year <= 1995) m.push('&#128187; You\'re older than JavaScript (1995) & Windows 95!');
+      if (year <= 1996) m.push('&#128172; You\'re older than ICQ (1996)!');
+      if (year <= 1998) m.push('&#128270; You\'re older than Google (1998)!');
+      if (year > 1998) m.push('&#128118; You\'re younger than Google! In 1998 you weren\'t even born yet.');
+      return `&#127874; You are ${age} years old in 1998.<br><br>${m.join('<br>')}`;
+    },
+    error_msgs: [
+      {title:'Memory Error',icon:'&#9888;',text:'Not enough memory to display statistics.<br>Available: 4,096 KB of 16,384 KB'},
+      {title:'Network Error',icon:'&#9888;',text:'Statistics server not responding.<br>Error 408: Request Timeout'},
+      {title:'Internet Explorer',icon:'&#128308;',text:'This program has performed an illegal operation.<br>IEXPLORE: fault in STATS98.DLL'},
+      {title:'Dr. Watson',icon:'&#128270;',text:'An unexpected error in "Statistics Bureau".<br>Send error report? (requires Internet)'},
+    ],
   }
-});
+};
 
-// ==============================
-// LOADING SCREEN
-// ==============================
-const loadingSteps = [
-  { pct: 5, text: 'Инициализация модема...' },
-  { pct: 12, text: 'Набор номера: 8-495-123-45-67...' },
-  { pct: 20, text: 'Соединение... bzzz krrr shhhh...' },
-  { pct: 30, text: 'Подключено! 28,800 bps' },
-  { pct: 40, text: 'Запрос DNS: stats98.narod.ru...' },
-  { pct: 55, text: 'Загрузка HTML документа...' },
-  { pct: 65, text: 'Загрузка графики (1 из 4)...' },
-  { pct: 75, text: 'Загрузка графики (3 из 4)...' },
-  { pct: 85, text: 'Загрузка скриптов JavaScript...' },
-  { pct: 92, text: 'Обработка стилей CSS...' },
-  { pct: 100, text: 'Готово!' },
-];
+function t(key) { return T[lang][key] || T['ru'][key] || key; }
 
+function applyLang() {
+  document.querySelectorAll('[data-t]').forEach(el => {
+    const key = el.dataset.t;
+    if (T[lang][key] !== undefined) el.innerHTML = T[lang][key];
+  });
+  document.getElementById('bannerTitle').innerHTML = t('banner_title');
+  document.getElementById('bannerSubtitle').innerHTML = t('banner_sub');
+  document.getElementById('marqueeText').innerHTML = t('marquee');
+  document.getElementById('nickInput').placeholder = lang === 'ru' ? 'Ваше имя...' : 'Your name...';
+  buildStartMenu();
+  buildZodiac();
+  buildPieChart();
+  buildExtraRadios();
+  showFact();
+}
+
+function setLang(l) {
+  lang = l;
+  document.getElementById('langRu').classList.toggle('active', l === 'ru');
+  document.getElementById('langEn').classList.toggle('active', l === 'en');
+  applyLang();
+  playClick();
+}
+
+// ===================== SOUND =====================
+let soundEnabled = true, audioCtx = null;
+function getAudioCtx() { if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)(); return audioCtx; }
+function playTone(freq, dur, type, vol) { if (!soundEnabled) return; try { const c=getAudioCtx(),o=c.createOscillator(),g=c.createGain(); o.type=type; o.frequency.setValueAtTime(freq,c.currentTime); g.gain.setValueAtTime(vol,c.currentTime); g.gain.exponentialRampToValueAtTime(0.001,c.currentTime+dur); o.connect(g).connect(c.destination); o.start(c.currentTime); o.stop(c.currentTime+dur); } catch(e){} }
+function playClick() { if(!soundEnabled)return; try{const c=getAudioCtx(),o=c.createOscillator(),g=c.createGain();o.type='square';o.frequency.setValueAtTime(800,c.currentTime);o.frequency.exponentialRampToValueAtTime(400,c.currentTime+0.05);g.gain.setValueAtTime(0.15,c.currentTime);g.gain.exponentialRampToValueAtTime(0.001,c.currentTime+0.06);o.connect(g).connect(c.destination);o.start(c.currentTime);o.stop(c.currentTime+0.06);}catch(e){} }
+function playError() { if(!soundEnabled)return; [440,349].forEach((f,i)=>{setTimeout(()=>playTone(f,0.16,'square',0.12),i*180);}); }
+function playStartup() { if(!soundEnabled)return; [523,659,784,1047].forEach((f,i)=>{setTimeout(()=>playTone(f,0.4,'sine',0.1),i*150);}); }
+function playReveal() { playTone(800,0.1,'triangle',0.1); }
+function playBoom() { if(!soundEnabled)return; try{const c=getAudioCtx(),o=c.createOscillator(),g=c.createGain();o.type='sawtooth';o.frequency.setValueAtTime(200,c.currentTime);o.frequency.exponentialRampToValueAtTime(30,c.currentTime+0.3);g.gain.setValueAtTime(0.2,c.currentTime);g.gain.exponentialRampToValueAtTime(0.001,c.currentTime+0.3);o.connect(g).connect(c.destination);o.start(c.currentTime);o.stop(c.currentTime+0.3);}catch(e){} }
+function playNickGen() { if(!soundEnabled)return; [523,784,1047,784,1047].forEach((f,i)=>{setTimeout(()=>playTone(f,0.06,'square',0.06),i*60);}); }
+function toggleSound() { soundEnabled=!soundEnabled; document.getElementById('soundToggle').innerHTML=soundEnabled?'&#128266;':'&#128264;'; if(soundEnabled)playClick(); }
+document.addEventListener('click',e=>{ if(e.target.closest('.retro-btn,.win-btn,.start-btn,.data-toggle,.taskbar-item,.start-menu-item,.zodiac-btn,.share-btn'))playClick(); });
+
+// ===================== LOADING =====================
 let loadStep = 0;
 function advanceLoading() {
-  if (loadStep >= loadingSteps.length) {
-    setTimeout(() => {
-      document.getElementById('loadingScreen').classList.add('hidden');
-      setTimeout(() => { document.getElementById('loadingScreen').style.display = 'none'; }, 500);
-      playStartup();
-    }, 300);
-    return;
-  }
-  const step = loadingSteps[loadStep];
-  document.getElementById('loadingBar').style.width = step.pct + '%';
-  document.getElementById('loadingText').textContent = step.text;
+  const steps = t('loading_steps');
+  if (loadStep >= steps.length) { setTimeout(()=>{ document.getElementById('loadingScreen').classList.add('hidden'); setTimeout(()=>{document.getElementById('loadingScreen').style.display='none';},500); playStartup(); },300); return; }
+  document.getElementById('loadingBar').style.width = ([5,12,20,30,40,55,65,75,85,92,100][loadStep])+'%';
+  document.getElementById('loadingText').textContent = steps[loadStep];
   loadStep++;
-  const delay = 200 + Math.random() * 500;
-  setTimeout(advanceLoading, delay);
+  setTimeout(advanceLoading, 200+Math.random()*500);
 }
-
-// Start loading after fonts kick in
+document.getElementById('loadingLogo').innerHTML = t('loading_logo');
+document.getElementById('loadingModem').textContent = t('loading_modem');
 setTimeout(advanceLoading, 400);
 
-// ==============================
-// DATA
-// ==============================
-const coffeeData = [
-  { country: 'Финляндия', value: 12.0, detail: '12 кг на человека — абсолютный рекорд!' },
-  { country: 'Норвегия', value: 9.9, detail: '9.9 кг — скандинавская традиция' },
-  { country: 'Нидерланды', value: 8.4, detail: '8.4 кг — кофе к тюльпанам' },
-  { country: 'Словения', value: 6.1, detail: '6.1 кг — европейский уровень' },
-  { country: 'Бразилия', value: 5.6, detail: '5.6 кг — родина кофе!' },
-  { country: 'Россия', value: 1.7, detail: '1.7 кг — чай всё-таки популярнее' },
-];
+// ===================== BSOD =====================
+function showBSOD() {
+  const s = document.getElementById('bsodScreen');
+  document.getElementById('bsodTitle').textContent = t('bsod_title');
+  document.getElementById('bsodText').innerHTML = t('bsod_text');
+  s.classList.add('visible');
+  playError();
+  setTimeout(()=>{ s.classList.remove('visible'); }, 3000);
+}
+// First BSOD after 90-180 sec, then every 120-300 sec
+function scheduleBSOD() { setTimeout(()=>{ showBSOD(); scheduleBSOD(); }, 120000+Math.random()*180000); }
+setTimeout(()=>{ showBSOD(); scheduleBSOD(); }, 90000+Math.random()*90000);
 
-const petData = [
-  { name: 'Кошки', value: 35, color: '#cc44aa', detail: '&#128049; Кошки — 35%. Более 600 млн по всему миру. Самый популярный питомец!' },
-  { name: 'Собаки', value: 28, color: '#4488cc', detail: '&#128054; Собаки — 28%. Лучший друг человека уже 15,000 лет.' },
-  { name: 'Рыбки', value: 18, color: '#00a89d', detail: '&#128032; Рыбки — 18%. Аквариумистика — третье по популярности хобби в мире.' },
-  { name: 'Птицы', value: 10, color: '#ffcc00', detail: '&#128038; Птицы — 10%. Попугаи могут запомнить до 1,500 слов.' },
-  { name: 'Грызуны', value: 6, color: '#6644aa', detail: '&#128057; Грызуны — 6%. Хомячки, морские свинки, шиншиллы и другие.' },
-  { name: 'Другие', value: 3, color: '#e87461', detail: '&#128034; Другие — 3%. Черепахи, змеи, хорьки и экзотика.' },
-];
+// Click to dismiss BSOD
+document.getElementById('bsodScreen').addEventListener('click', ()=>{ document.getElementById('bsodScreen').classList.remove('visible'); });
+document.addEventListener('keydown', ()=>{ document.getElementById('bsodScreen').classList.remove('visible'); });
 
-const funFacts = [
-  { icon: '&#128202;', text: 'Каждую секунду в мире выпивают 26,000 чашек кофе.' },
-  { icon: '&#127757;', text: 'Земля вращается со скоростью 1,670 км/ч на экваторе.' },
-  { icon: '&#128037;', text: 'Муравьи могут поднять вес в 50 раз больше собственного.' },
-  { icon: '&#9889;', text: 'Молния бьёт в Землю около 100 раз в секунду.' },
-  { icon: '&#128171;', text: 'Мировой интернет-трафик в 1998 году — около 1 ГБ/сек.' },
-  { icon: '&#127775;', text: 'Ближайшая звезда до Солнца — Проксима Центавра (4.24 св. года).' },
-  { icon: '&#128218;', text: 'В Библиотеке Конгресса хранится более 170 млн единиц.' },
-  { icon: '&#127754;', text: 'Океаны содержат 97% всей воды на Земле.' },
-  { icon: '&#128640;', text: 'Свет от Солнца до Земли идёт 8 минут 20 секунд.' },
-  { icon: '&#127836;', text: 'Итальянцы съедают 26 кг макарон на человека в год.' },
-];
+// ===================== BANNER STARS =====================
+(function(){const c=document.getElementById('bannerStars');for(let i=0;i<20;i++){const s=document.createElement('span');s.textContent='✦';s.style.left=Math.random()*100+'%';s.style.top=Math.random()*100+'%';s.style.animationDelay=Math.random()*2+'s';s.style.fontSize=(6+Math.random()*6)+'px';c.appendChild(s);}})();
 
-const mineFacts = [
-  'Финляндия — лидер по кофе: 12 кг/чел в год',
-  'На Земле ~600 млн кошек',
-  'Интернет в 1998: 360 млн пользователей',
-  'Первый сайт: 1991 год, CERN',
-  'В океане живёт ~230,000 видов',
-  'Мозг потребляет 20% энергии тела',
-  'Мёд не портится тысячи лет',
-  'Сердце бьётся ~100,000 раз в день',
-  'Свет обойдёт Землю за 0.13 сек',
-  'Бананы радиоактивны (немного!)',
-  'Средний человек ходит 5 раз вокруг Земли за жизнь',
-  'В 1998 году Nokia 6110 — хит продаж',
-  'Длина ДНК: 2 метра в каждой клетке',
-  'Луна удаляется от Земли на 3.8 см/год',
-  'Кофеин начинает действовать через 10 минут',
-  'Первое SMS отправлено в 1992 году',
-  'Температура ядра Земли: ~5500°C',
-  'Осьминог имеет 3 сердца',
-  'Пчёлы умеют считать до 4',
-  'Венера вращается в обратную сторону',
-  'Wi-Fi изобретён в 1997 году',
-  'Муравьи не спят',
-  'Молния: 30,000°C',
-  'Чихание: ~160 км/ч',
-  'Юпитер мог бы вместить 1300 Земель',
-];
-
-const extraCategories = [
-  { name: 'Интернет-пользователи (млн)', data: [16, 36, 70, 120, 188, 280, 360], labels: ['1992','1993','1994','1995','1996','1997','1998'], unit: 'млн чел.' },
-  { name: 'Мобильные телефоны (млн)', data: [23, 55, 90, 145, 215, 310, 470], labels: ['1992','1993','1994','1995','1996','1997','1998'], unit: 'млн абонентов' },
-  { name: 'Выбросы CO₂ (млрд тонн)', data: [22.0, 22.2, 22.6, 23.0, 23.5, 23.8, 24.1], labels: ['1992','1993','1994','1995','1996','1997','1998'], unit: 'млрд тонн' },
-];
-
-// ==============================
-// BANNER STARS
-// ==============================
-(function() {
-  const c = document.getElementById('bannerStars');
-  for (let i = 0; i < 20; i++) {
-    const s = document.createElement('span');
-    s.textContent = '✦';
-    s.style.left = Math.random()*100+'%';
-    s.style.top = Math.random()*100+'%';
-    s.style.animationDelay = Math.random()*2+'s';
-    s.style.fontSize = (6+Math.random()*6)+'px';
-    c.appendChild(s);
-  }
-})();
-
-// ==============================
-// POPULATION COUNTER
-// ==============================
+// ===================== POPULATION =====================
 let population = 5943030000;
 const odometerEl = document.getElementById('odometer');
-function renderOdometer() {
-  const s = population.toString();
-  odometerEl.innerHTML = '';
-  for (let i = 0; i < s.length; i++) {
-    if (i > 0 && (s.length - i) % 3 === 0) {
-      const sep = document.createElement('div');
-      sep.className = 'odometer-sep';
-      sep.textContent = '.';
-      odometerEl.appendChild(sep);
-    }
-    const d = document.createElement('div');
-    d.className = 'odometer-digit';
-    d.textContent = s[i];
-    odometerEl.appendChild(d);
-  }
-}
-renderOdometer();
-setInterval(() => { population += Math.floor(Math.random()*3)+1; renderOdometer(); }, 400);
+function renderOdometer() { const s=population.toString(); odometerEl.innerHTML=''; for(let i=0;i<s.length;i++){if(i>0&&(s.length-i)%3===0){const sep=document.createElement('div');sep.className='odometer-sep';sep.textContent='.';odometerEl.appendChild(sep);}const d=document.createElement('div');d.className='odometer-digit';d.textContent=s[i];odometerEl.appendChild(d);} }
+renderOdometer(); setInterval(()=>{population+=Math.floor(Math.random()*3)+1;renderOdometer();},400);
 
-// ==============================
-// COFFEE CHART
-// ==============================
-function buildCoffeeChart() {
-  const chart = document.getElementById('coffeeChart');
-  chart.innerHTML = '';
-  const mx = Math.max(...coffeeData.map(d => d.value));
-  coffeeData.forEach((d, i) => {
-    const col = document.createElement('div');
-    col.className = 'bar-col';
-    col.innerHTML = `<div class="bar-value">${d.value}</div><div class="bar-fill" style="height:${(d.value/mx)*160}px;animation-delay:${i*0.1}s"></div><div class="bar-label">${d.country}</div><div class="bar-tooltip">${d.detail}</div>`;
-    chart.appendChild(col);
-  });
-}
-function buildCoffeeTable() {
-  let h = '<table class="data-table"><tr><th>№</th><th>Страна</th><th>кг/чел в год</th></tr>';
-  coffeeData.forEach((d,i) => { h += `<tr><td>${i+1}</td><td>${d.country}</td><td>${d.value}</td></tr>`; });
-  document.getElementById('coffeeTableView').innerHTML = h + '</table>';
-}
-buildCoffeeChart();
-buildCoffeeTable();
+// ===================== COFFEE =====================
+const coffeeData=[{c:'Финляндия',ce:'Finland',v:12.0,d:'12 кг — рекорд!',de:'12 kg — world record!'},{c:'Норвегия',ce:'Norway',v:9.9,d:'9.9 кг — скандинавская традиция',de:'9.9 kg — Scandinavian tradition'},{c:'Нидерланды',ce:'Netherlands',v:8.4,d:'8.4 кг — кофе к тюльпанам',de:'8.4 kg — coffee with tulips'},{c:'Словения',ce:'Slovenia',v:6.1,d:'6.1 кг — европейский уровень',de:'6.1 kg — European level'},{c:'Бразилия',ce:'Brazil',v:5.6,d:'5.6 кг — родина кофе!',de:'5.6 kg — birthplace of coffee!'},{c:'Россия',ce:'Russia',v:1.7,d:'1.7 кг — чай популярнее',de:'1.7 kg — tea is more popular'}];
 
-function toggleCoffeeView(view, btn) {
-  document.querySelectorAll('#winCoffee .data-toggle').forEach(b => b.classList.remove('active'));
-  btn.classList.add('active');
-  document.getElementById('coffeeChartView').style.display = view === 'chart' ? '' : 'none';
-  document.getElementById('coffeeTableView').style.display = view === 'table' ? '' : 'none';
-}
+function buildCoffeeChart(){const chart=document.getElementById('coffeeChart');chart.innerHTML='';const mx=Math.max(...coffeeData.map(d=>d.v));coffeeData.forEach((d,i)=>{const col=document.createElement('div');col.className='bar-col';const name=lang==='en'?d.ce:d.c;const detail=lang==='en'?d.de:d.d;col.innerHTML=`<div class="bar-value">${d.v}</div><div class="bar-fill" style="height:${(d.v/mx)*160}px;animation-delay:${i*0.1}s"></div><div class="bar-label">${name}</div><div class="bar-tooltip">${detail}</div>`;chart.appendChild(col);});}
+function buildCoffeeTable(){let h='<table class="data-table"><tr><th>№</th><th>'+(lang==='en'?'Country':'Страна')+'</th><th>'+(lang==='en'?'kg/person/year':'кг/чел в год')+'</th></tr>';coffeeData.forEach((d,i)=>{h+=`<tr><td>${i+1}</td><td>${lang==='en'?d.ce:d.c}</td><td>${d.v}</td></tr>`;});document.getElementById('coffeeTableView').innerHTML=h+'</table>';}
+function toggleCoffeeView(v,btn){document.querySelectorAll('#winCoffee .data-toggle').forEach(b=>b.classList.remove('active'));btn.classList.add('active');document.getElementById('coffeeChartView').style.display=v==='chart'?'':'none';document.getElementById('coffeeTableView').style.display=v==='table'?'':'none';buildCoffeeChart();buildCoffeeTable();}
+buildCoffeeChart();buildCoffeeTable();
 
-// ==============================
-// PIE CHART
-// ==============================
-function buildPieChart() {
-  const container = document.getElementById('pieContainer');
-  const total = petData.reduce((s,d) => s+d.value, 0);
-  let cum = 0;
-  const R = 80, cx = 90, cy = 90;
-  let svg = '';
-  petData.forEach((d,i) => {
-    const sa = (cum/total)*2*Math.PI; cum += d.value;
-    const ea = (cum/total)*2*Math.PI;
-    const la = ea-sa > Math.PI ? 1 : 0;
-    svg += `<path class="pie-slice" data-index="${i}" d="M${cx},${cy} L${cx+R*Math.cos(sa)},${cy+R*Math.sin(sa)} A${R},${R} 0 ${la},1 ${cx+R*Math.cos(ea)},${cy+R*Math.sin(ea)} Z" fill="${d.color}" />`;
-  });
-  let leg = '';
-  petData.forEach((d,i) => {
-    leg += `<div class="pie-legend-item" data-index="${i}" onclick="selectPet(${i})" onmouseenter="highlightPet(${i})" onmouseleave="unhighlightPet(${i})"><div class="pie-legend-color" style="background:${d.color}"></div><span>${d.name} — ${d.value}%</span></div>`;
-  });
-  container.innerHTML = `<div class="pie-chart-wrapper"><svg class="pie-chart-svg" viewBox="0 0 180 180">${svg}</svg></div><div class="pie-legend">${leg}</div>`;
-  document.querySelectorAll('.pie-slice').forEach(s => {
-    s.addEventListener('click', () => selectPet(+s.dataset.index));
-    s.addEventListener('mouseenter', () => highlightPet(+s.dataset.index));
-    s.addEventListener('mouseleave', () => unhighlightPet(+s.dataset.index));
-  });
-}
-let activePet = -1;
-function selectPet(idx) {
-  activePet = activePet===idx ? -1 : idx;
-  document.querySelectorAll('.pie-slice').forEach(s => s.classList.toggle('active', +s.dataset.index===activePet));
-  document.querySelectorAll('.pie-legend-item').forEach(l => l.classList.toggle('active', +l.dataset.index===activePet));
-  document.getElementById('pieDetail').innerHTML = activePet >= 0 ? petData[activePet].detail : 'Нажмите на сектор для подробностей';
-  playClick();
-}
-function highlightPet(idx) { if (activePet>=0) return; document.querySelectorAll('.pie-slice')[idx]?.classList.add('active'); document.querySelectorAll('.pie-legend-item')[idx]?.classList.add('active'); document.getElementById('pieDetail').innerHTML = petData[idx].detail; }
-function unhighlightPet(idx) { if (activePet>=0) return; document.querySelectorAll('.pie-slice')[idx]?.classList.remove('active'); document.querySelectorAll('.pie-legend-item')[idx]?.classList.remove('active'); document.getElementById('pieDetail').innerHTML = 'Нажмите на сектор для подробностей'; }
+// ===================== PIE =====================
+const petValues=[35,28,18,10,6,3];const petColors=['#cc44aa','#4488cc','#00a89d','#ffcc00','#6644aa','#e87461'];
+function buildPieChart(){const c=document.getElementById('pieContainer');const names=t('pet_names');const details=t('pet_details');const total=petValues.reduce((s,v)=>s+v,0);let cum=0;const R=80,cx=90,cy=90;let svg='';petValues.forEach((v,i)=>{const sa=(cum/total)*2*Math.PI;cum+=v;const ea=(cum/total)*2*Math.PI;const la=ea-sa>Math.PI?1:0;svg+=`<path class="pie-slice" data-index="${i}" d="M${cx},${cy} L${cx+R*Math.cos(sa)},${cy+R*Math.sin(sa)} A${R},${R} 0 ${la},1 ${cx+R*Math.cos(ea)},${cy+R*Math.sin(ea)} Z" fill="${petColors[i]}" />`;});
+let leg='';names.forEach((n,i)=>{leg+=`<div class="pie-legend-item" data-index="${i}" onclick="selectPet(${i})" onmouseenter="highlightPet(${i})" onmouseleave="unhighlightPet(${i})"><div class="pie-legend-color" style="background:${petColors[i]}"></div><span>${n} — ${petValues[i]}%</span></div>`;});
+c.innerHTML=`<div class="pie-chart-wrapper"><svg class="pie-chart-svg" viewBox="0 0 180 180">${svg}</svg></div><div class="pie-legend">${leg}</div>`;
+document.querySelectorAll('.pie-slice').forEach(s=>{s.addEventListener('click',()=>selectPet(+s.dataset.index));s.addEventListener('mouseenter',()=>highlightPet(+s.dataset.index));s.addEventListener('mouseleave',()=>unhighlightPet(+s.dataset.index));});}
+let activePet=-1;
+function selectPet(i){activePet=activePet===i?-1:i;document.querySelectorAll('.pie-slice').forEach(s=>s.classList.toggle('active',+s.dataset.index===activePet));document.querySelectorAll('.pie-legend-item').forEach(l=>l.classList.toggle('active',+l.dataset.index===activePet));document.getElementById('pieDetail').innerHTML=activePet>=0?t('pet_details')[activePet]:t('pie_default');}
+function highlightPet(i){if(activePet>=0)return;document.querySelectorAll('.pie-slice')[i]?.classList.add('active');document.querySelectorAll('.pie-legend-item')[i]?.classList.add('active');document.getElementById('pieDetail').innerHTML=t('pet_details')[i];}
+function unhighlightPet(i){if(activePet>=0)return;document.querySelectorAll('.pie-slice')[i]?.classList.remove('active');document.querySelectorAll('.pie-legend-item')[i]?.classList.remove('active');document.getElementById('pieDetail').innerHTML=t('pie_default');}
 buildPieChart();
 
-// ==============================
-// FUN FACTS
-// ==============================
-let factIdx = 0;
-function showFact() {
-  const f = funFacts[factIdx];
-  document.getElementById('factIcon').innerHTML = f.icon;
-  document.getElementById('factText').innerHTML = f.text;
-  document.getElementById('factCounter').textContent = `${factIdx+1} / ${funFacts.length}`;
-}
-function nextFact() { factIdx = (factIdx+1)%funFacts.length; showFact(); }
-function prevFact() { factIdx = (factIdx-1+funFacts.length)%funFacts.length; showFact(); }
-showFact();
-setInterval(nextFact, 8000);
+// ===================== FUN FACTS =====================
+let factIdx=0;
+function showFact(){const facts=t('funfacts');const f=facts[factIdx%facts.length];document.getElementById('factIcon').innerHTML=f.i;document.getElementById('factText').innerHTML=f.t;document.getElementById('factCounter').textContent=`${factIdx%facts.length+1} / ${facts.length}`;}
+function nextFact(){factIdx++;showFact();}function prevFact(){factIdx=Math.max(0,factIdx-1);showFact();}
+showFact();setInterval(nextFact,8000);
 
-// ==============================
-// EXTRA DATA
-// ==============================
-let extraIdx = 0;
-function buildExtraRadios() {
-  const c = document.getElementById('extraRadios'); c.innerHTML = '';
-  extraCategories.forEach((cat,i) => {
-    const d = document.createElement('div');
-    d.className = 'retro-radio'+(i===extraIdx?' selected':'');
-    d.innerHTML = `<div class="retro-radio-dot"></div><span>${cat.name}</span>`;
-    d.onclick = () => { extraIdx=i; buildExtraRadios(); buildExtraChart(); playClick(); };
-    c.appendChild(d);
-  });
-}
-function buildExtraChart() {
-  const cat = extraCategories[extraIdx];
-  const chart = document.getElementById('extraChart');
-  const mx = Math.max(...cat.data);
-  chart.innerHTML = '';
-  cat.data.forEach((val,i) => {
-    const bar = document.createElement('div');
-    bar.className = 'mini-bar';
-    bar.style.height = (val/mx)*55+'px';
-    bar.title = `${cat.labels[i]}: ${val} ${cat.unit}`;
-    chart.appendChild(bar);
-  });
-  document.getElementById('extraLabel').textContent = cat.labels.join('  ·  ');
-  document.getElementById('extraStatus').textContent = `${cat.name} · ${cat.labels[0]}–${cat.labels[cat.labels.length-1]}`;
-}
-buildExtraRadios();
-buildExtraChart();
+// ===================== EXTRA DATA =====================
+const extraData=[[16,36,70,120,188,280,360],[23,55,90,145,215,310,470],[22.0,22.2,22.6,23.0,23.5,23.8,24.1]];
+const extraLabels=['1992','1993','1994','1995','1996','1997','1998'];
+let extraIdx=0;
+function buildExtraRadios(){const c=document.getElementById('extraRadios');c.innerHTML='';t('extra_cats').forEach((cat,i)=>{const d=document.createElement('div');d.className='retro-radio'+(i===extraIdx?' selected':'');d.innerHTML=`<div class="retro-radio-dot"></div><span>${cat}</span>`;d.onclick=()=>{extraIdx=i;buildExtraRadios();buildExtraChart();playClick();};c.appendChild(d);});}
+function buildExtraChart(){const data=extraData[extraIdx];const chart=document.getElementById('extraChart');const mx=Math.max(...data);chart.innerHTML='';data.forEach((v,i)=>{const bar=document.createElement('div');bar.className='mini-bar';bar.style.height=(v/mx)*55+'px';bar.title=`${extraLabels[i]}: ${v}`;chart.appendChild(bar);});document.getElementById('extraLabel').textContent=extraLabels.join('  ·  ');}
+buildExtraRadios();buildExtraChart();
 
-// ==============================
-// VISITOR COUNTER
-// ==============================
-(function() {
-  const num = '004782';
-  const c = document.getElementById('visitorCounter');
-  for (const ch of num) {
-    const d = document.createElement('div');
-    d.className = 'visitor-digit';
-    d.textContent = ch;
-    c.appendChild(d);
-  }
-})();
+// ===================== MINESWEEPER =====================
+const MINE_ROWS=5,MINE_COLS=6,MINE_BOMBS=5;let mineBoard=[],mineRevealed=[],mineGameOver=false,mineTimer=0,mineTimerInt=null;
+const mineFacts=['Finland: 12 kg coffee/person/year','600 million cats worldwide','Internet 1998: 360M users','First website: 1991, CERN','230,000 ocean species','Brain uses 20% of body energy','Honey never spoils','Heart beats ~100,000x/day','Light orbits Earth in 0.13s','Bananas are slightly radioactive','Nokia 6110: 1998 bestseller','DNA length: 2m per cell','Moon moves 3.8 cm/year from Earth','Caffeine kicks in within 10 min','First SMS sent in 1992','Earth core: ~5500°C','Octopus has 3 hearts','Bees can count to 4','Venus spins backwards','Wi-Fi invented in 1997','Ants never sleep','Lightning: 30,000°C','A sneeze: ~160 km/h','Jupiter fits 1300 Earths','Average person walks 5x around Earth in lifetime'];
 
-// ==============================
-// MINESWEEPER
-// ==============================
-const MINE_ROWS = 5, MINE_COLS = 6, MINE_BOMBS = 5;
-let mineBoard = [], mineRevealed = [], mineGameOver = false, mineTimer = 0, mineTimerInterval = null;
-
-function initMinesweeper() {
-  mineBoard = [];
-  mineRevealed = [];
-  mineGameOver = false;
-  mineTimer = 0;
-  document.getElementById('mineTimer').textContent = '0';
-  document.getElementById('mineCounter').textContent = MINE_BOMBS.toString();
-  document.getElementById('mineFace').innerHTML = '&#128578;';
-  document.getElementById('mineStatus').textContent = 'Готово';
-  if (mineTimerInterval) clearInterval(mineTimerInterval);
-  mineTimerInterval = null;
-
-  // Shuffle facts for cells
-  const shuffled = [...mineFacts].sort(() => Math.random()-0.5);
-
-  for (let r = 0; r < MINE_ROWS; r++) {
-    mineBoard[r] = [];
-    mineRevealed[r] = [];
-    for (let c = 0; c < MINE_COLS; c++) {
-      mineBoard[r][c] = { bomb: false, fact: shuffled[(r*MINE_COLS+c) % shuffled.length] };
-      mineRevealed[r][c] = false;
-    }
-  }
-
-  // Place bombs
-  let placed = 0;
-  while (placed < MINE_BOMBS) {
-    const r = Math.floor(Math.random()*MINE_ROWS);
-    const c = Math.floor(Math.random()*MINE_COLS);
-    if (!mineBoard[r][c].bomb) { mineBoard[r][c].bomb = true; placed++; }
-  }
-
-  renderMineGrid();
-}
-
-function renderMineGrid() {
-  const grid = document.getElementById('mineGrid');
-  grid.innerHTML = '';
-  for (let r = 0; r < MINE_ROWS; r++) {
-    for (let c = 0; c < MINE_COLS; c++) {
-      const cell = document.createElement('div');
-      cell.className = 'minesweeper-cell';
-      if (mineRevealed[r][c]) {
-        cell.classList.add('revealed');
-        if (mineBoard[r][c].bomb) {
-          cell.classList.add('bomb');
-          cell.innerHTML = '&#128163;';
-        } else {
-          cell.textContent = mineBoard[r][c].fact;
-          cell.style.color = '#333';
-        }
-      } else {
-        cell.textContent = '';
-        cell.addEventListener('click', () => revealMineCell(r, c));
-      }
-      grid.appendChild(cell);
-    }
-  }
-}
-
-function revealMineCell(r, c) {
-  if (mineGameOver || mineRevealed[r][c]) return;
-  if (!mineTimerInterval) {
-    mineTimerInterval = setInterval(() => {
-      mineTimer++;
-      document.getElementById('mineTimer').textContent = mineTimer;
-    }, 1000);
-  }
-  mineRevealed[r][c] = true;
-  if (mineBoard[r][c].bomb) {
-    mineGameOver = true;
-    playBoom();
-    document.getElementById('mineFace').innerHTML = '&#128565;';
-    document.getElementById('mineStatus').textContent = 'БУМ! Попробуйте ещё раз';
-    // Reveal all bombs
-    for (let rr = 0; rr < MINE_ROWS; rr++)
-      for (let cc = 0; cc < MINE_COLS; cc++)
-        if (mineBoard[rr][cc].bomb) mineRevealed[rr][cc] = true;
-    if (mineTimerInterval) clearInterval(mineTimerInterval);
-  } else {
-    playReveal();
-    // Check win
-    let unrevealed = 0;
-    for (let rr = 0; rr < MINE_ROWS; rr++)
-      for (let cc = 0; cc < MINE_COLS; cc++)
-        if (!mineRevealed[rr][cc] && !mineBoard[rr][cc].bomb) unrevealed++;
-    if (unrevealed === 0) {
-      mineGameOver = true;
-      document.getElementById('mineFace').innerHTML = '&#128526;';
-      document.getElementById('mineStatus').textContent = 'Победа! Все факты найдены!';
-      if (mineTimerInterval) clearInterval(mineTimerInterval);
-    }
-  }
-  renderMineGrid();
-}
-
+function initMinesweeper(){mineBoard=[];mineRevealed=[];mineGameOver=false;mineTimer=0;document.getElementById('mineTimer').textContent='0';document.getElementById('mineCounter').textContent=MINE_BOMBS.toString();document.getElementById('mineFace').innerHTML='&#128578;';if(mineTimerInt)clearInterval(mineTimerInt);mineTimerInt=null;const sh=[...mineFacts].sort(()=>Math.random()-0.5);for(let r=0;r<MINE_ROWS;r++){mineBoard[r]=[];mineRevealed[r]=[];for(let c=0;c<MINE_COLS;c++){mineBoard[r][c]={bomb:false,fact:sh[(r*MINE_COLS+c)%sh.length]};mineRevealed[r][c]=false;}}let p=0;while(p<MINE_BOMBS){const r=Math.floor(Math.random()*MINE_ROWS),c=Math.floor(Math.random()*MINE_COLS);if(!mineBoard[r][c].bomb){mineBoard[r][c].bomb=true;p++;}}renderMineGrid();}
+function renderMineGrid(){const g=document.getElementById('mineGrid');g.innerHTML='';for(let r=0;r<MINE_ROWS;r++)for(let c=0;c<MINE_COLS;c++){const cell=document.createElement('div');cell.className='minesweeper-cell';if(mineRevealed[r][c]){cell.classList.add('revealed');if(mineBoard[r][c].bomb){cell.classList.add('bomb');cell.innerHTML='&#128163;';}else{cell.textContent=mineBoard[r][c].fact;cell.style.color='#333';}}else{cell.addEventListener('click',()=>revealMineCell(r,c));}g.appendChild(cell);}}
+function revealMineCell(r,c){if(mineGameOver||mineRevealed[r][c])return;if(!mineTimerInt)mineTimerInt=setInterval(()=>{mineTimer++;document.getElementById('mineTimer').textContent=mineTimer;},1000);mineRevealed[r][c]=true;if(mineBoard[r][c].bomb){mineGameOver=true;playBoom();document.getElementById('mineFace').innerHTML='&#128565;';for(let rr=0;rr<MINE_ROWS;rr++)for(let cc=0;cc<MINE_COLS;cc++)if(mineBoard[rr][cc].bomb)mineRevealed[rr][cc]=true;if(mineTimerInt)clearInterval(mineTimerInt);}else{playReveal();let u=0;for(let rr=0;rr<MINE_ROWS;rr++)for(let cc=0;cc<MINE_COLS;cc++)if(!mineRevealed[rr][cc]&&!mineBoard[rr][cc].bomb)u++;if(u===0){mineGameOver=true;document.getElementById('mineFace').innerHTML='&#128526;';if(mineTimerInt)clearInterval(mineTimerInt);}}renderMineGrid();}
 initMinesweeper();
 
-// ==============================
-// NICKNAME GENERATOR
-// ==============================
-let nickLang = 'ru';
+// ===================== NICKNAME =====================
+let nickLang='ru';
+function setNickLang(l){nickLang=l;document.getElementById('nickLangRu').classList.toggle('active',l==='ru');document.getElementById('nickLangEn').classList.toggle('active',l==='en');playClick();}
+const nickDecorRu=[['~*','*~'],['★','★'],['♛','♛'],['«','»'],['✧','✧'],['❖','❖']];
+const nickDecorEn=[['~*','*~'],['xXx_','_xXx'],['>>>','<<<'],['=-','-='],['***','***'],['||','||']];
+const nickPreRu=['Крутой','Тёмный','Кибер','Мега','Супер','Нео','Дерзкий','Звёздный','Ледяной','Огненный'];
+const nickSufRu=['_98','XXL','_Pro','2000','_Мастер','_Босс','_Топ','_666'];
+const nickPreEn=['Dark','Cyber','Mega','Neo','Shadow','Ice','Fire','Star','Cool','Silent'];
+const nickSufEn=['_98','XXL','_Pro','2000','_Master','_Boss','X','_666'];
+function translit(t){const m={'а':'a','б':'b','в':'v','г':'g','д':'d','е':'e','ё':'yo','ж':'zh','з':'z','и':'i','й':'y','к':'k','л':'l','м':'m','н':'n','о':'o','п':'p','р':'r','с':'s','т':'t','у':'u','ф':'f','х':'kh','ц':'ts','ч':'ch','ш':'sh','щ':'sch','ъ':'','ы':'y','ь':'','э':'e','ю':'yu','я':'ya'};return t.split('').map(c=>{const l=c.toLowerCase();if(m[l]!==undefined){const r=m[l];return c===l?r:r.charAt(0).toUpperCase()+r.slice(1);}return c;}).join('');}
+function generateNick(){let name=document.getElementById('nickInput').value.trim();if(!name)name=nickLang==='ru'?'Аноним':'Anon';playNickGen();let nick;if(nickLang==='ru'){const dc=nickDecorRu[Math.floor(Math.random()*nickDecorRu.length)];const pr=Math.random()>0.4?nickPreRu[Math.floor(Math.random()*nickPreRu.length)]:'';const su=Math.random()>0.4?nickSufRu[Math.floor(Math.random()*nickSufRu.length)]:'';const sp=Math.random()>0.5?'_':'';nick=`${dc[0]} ${pr}${sp}${name}${su} ${dc[1]}`;}else{const en=translit(name);const dc=nickDecorEn[Math.floor(Math.random()*nickDecorEn.length)];const pr=Math.random()>0.4?nickPreEn[Math.floor(Math.random()*nickPreEn.length)]:'';const su=Math.random()>0.4?nickSufEn[Math.floor(Math.random()*nickSufEn.length)]:'';const sp=Math.random()>0.5?'_':'';nick=`${dc[0]}${pr}${sp}${en}${su}${dc[1]}`;}const r=document.getElementById('nickResult');let sp='';for(let i=0;i<6;i++)sp+=`<span class="sparkle" style="left:${Math.random()*90}%;top:${Math.random()*80}%;animation-delay:${Math.random()*2}s;">✦</span>`;r.innerHTML=sp+`<span style="position:relative;z-index:1;">${nick}</span>`;r.dataset.nick=nick;}
+function copyNick(){const n=document.getElementById('nickResult').dataset.nick;if(!n)return;navigator.clipboard.writeText(n).then(()=>{document.getElementById('nickCopied').textContent=t('nick_copied');setTimeout(()=>{document.getElementById('nickCopied').textContent='';},2000);}).catch(()=>{});}
+document.getElementById('nickInput').addEventListener('keydown',e=>{if(e.key==='Enter')generateNick();});
 
-function setNickLang(lang) {
-  nickLang = lang;
-  document.getElementById('nickLangRu').classList.toggle('active', lang === 'ru');
-  document.getElementById('nickLangEn').classList.toggle('active', lang === 'en');
-  playClick();
-}
+// ===================== HOROSCOPE =====================
+const zodiacIcons=['♈','♉','♊','♋','♌','♍','♎','♏','♐','♑','♒','♓'];
+function buildZodiac(){const g=document.getElementById('zodiacGrid');g.innerHTML='';const names=t('zodiac');names.forEach((n,i)=>{const b=document.createElement('div');b.className='zodiac-btn';b.innerHTML=`<span>${zodiacIcons[i]}</span>${n}`;b.onclick=()=>{g.querySelectorAll('.zodiac-btn').forEach(x=>x.classList.remove('active'));b.classList.add('active');document.getElementById('zodiacResult').innerHTML=t('horoscopes')[i];playClick();};g.appendChild(b);});}
+buildZodiac();
 
-const nickDecorRu = [
-  ['~*', '*~'], ['★', '★'], ['♛', '♛'], ['«', '»'], ['[', ']'],
-  ['✧', '✧'], ['❖', '❖'], ['▸', '◂'], ['●', '●'], ['♕', '♕']
-];
-const nickDecorEn = [
-  ['~*', '*~'], ['xXx_', '_xXx'], ['>>>', '<<<'], ['[', ']'], ['***', '***'],
-  ['=-', '-='], ['||', '||'], ['>>>', '<<<'], ['~', '~'], ['*~', '~*']
-];
-const nickPrefixRu = ['Крутой', 'Тёмный', 'Кибер', 'Мега', 'Супер', 'Нео', 'Дерзкий', 'Звёздный', 'Ледяной', 'Огненный', 'Лунный', 'Великий', 'Быстрый', 'Тихий'];
-const nickSuffixRu = ['_98', 'XXL', '_Pro', '2000', '_Мастер', '_Босс', '_Топ', '_Гуру', '_Ас', '_Маг', '_666', '_228'];
-const nickPrefixEn = ['Dark', 'Cyber', 'Mega', 'Neo', 'Shadow', 'Ice', 'Fire', 'Star', 'Cool', 'Silent', 'Crazy', 'Night'];
-const nickSuffixEn = ['_98', 'XXL', '_Pro', '2000', '_Master', '_Boss', '_Top', '_666', 'X', '_228'];
+// ===================== AGE CALCULATOR =====================
+function calcAge(){const year=parseInt(document.getElementById('ageInput').value);if(isNaN(year)||year<1900||year>2010)return;document.getElementById('ageResult').innerHTML=t('age_results')(year);playClick();}
+document.getElementById('ageInput').addEventListener('keydown',e=>{if(e.key==='Enter')calcAge();});
 
-function transliterate(text) {
-  const map = {'а':'a','б':'b','в':'v','г':'g','д':'d','е':'e','ё':'yo','ж':'zh','з':'z','и':'i','й':'y','к':'k','л':'l','м':'m','н':'n','о':'o','п':'p','р':'r','с':'s','т':'t','у':'u','ф':'f','х':'kh','ц':'ts','ч':'ch','ш':'sh','щ':'sch','ъ':'','ы':'y','ь':'','э':'e','ю':'yu','я':'ya'};
-  return text.split('').map(c => {
-    const lower = c.toLowerCase();
-    if (map[lower] !== undefined) {
-      const result = map[lower];
-      return c === lower ? result : result.charAt(0).toUpperCase() + result.slice(1);
-    }
-    return c;
-  }).join('');
-}
+// ===================== SHARE =====================
+function shareLink(){const url=window.location.href;if(navigator.share){navigator.share({title:'Stats98',text:lang==='ru'?'Ретро портал данных из 1998!':'Retro data portal from 1998!',url}).catch(()=>{});}else{navigator.clipboard.writeText(url).then(()=>{const toast=document.getElementById('shareToast');toast.classList.add('visible');setTimeout(()=>toast.classList.remove('visible'),2000);}).catch(()=>{});}}
 
-function generateNick() {
-  let name = document.getElementById('nickInput').value.trim();
-  if (!name) { name = nickLang === 'ru' ? 'Аноним' : 'Anon'; }
+// ===================== ERROR DIALOGS =====================
+let errorDialogVisible=false;
+function showErrorDialog(){if(errorDialogVisible)return;errorDialogVisible=true;playError();const errs=t('error_msgs');const err=errs[Math.floor(Math.random()*errs.length)];const d=document.createElement('div');d.className='error-dialog';d.style.left=(100+Math.random()*(window.innerWidth-500))+'px';d.style.top=(100+Math.random()*(window.innerHeight-300))+'px';d.innerHTML=`<div class="win-titlebar"><span class="win-titlebar-text">${err.title}</span><div class="win-titlebar-buttons"><button class="win-btn" onclick="this.closest('.error-dialog').remove();errorDialogVisible=false;playClick();">&#10005;</button></div></div><div class="error-body"><div class="error-icon">${err.icon}</div><div class="error-text">${err.text}</div></div><div class="error-buttons"><button class="retro-btn" onclick="this.closest('.error-dialog').remove();errorDialogVisible=false;playClick();">OK</button></div>`;document.body.appendChild(d);
+let dragging=false,dx,dy;const tb=d.querySelector('.win-titlebar');tb.addEventListener('mousedown',e=>{if(e.target.classList.contains('win-btn'))return;dragging=true;const r=d.getBoundingClientRect();dx=e.clientX-r.left;dy=e.clientY-r.top;e.preventDefault();});document.addEventListener('mousemove',e=>{if(!dragging)return;d.style.left=(e.clientX-dx)+'px';d.style.top=(e.clientY-dy)+'px';});document.addEventListener('mouseup',()=>{dragging=false;});}
+function scheduleError(){setTimeout(()=>{showErrorDialog();scheduleError();},40000+Math.random()*50000);}
+setTimeout(()=>{showErrorDialog();scheduleError();},25000+Math.random()*20000);
 
-  playNickGen();
+// ===================== VISITOR =====================
+(function(){const num='004782';const c=document.getElementById('visitorCounter');for(const ch of num){const d=document.createElement('div');d.className='visitor-digit';d.textContent=ch;c.appendChild(d);}})();
 
-  let nick;
-  if (nickLang === 'ru') {
-    const decor = nickDecorRu[Math.floor(Math.random()*nickDecorRu.length)];
-    const prefix = Math.random() > 0.4 ? nickPrefixRu[Math.floor(Math.random()*nickPrefixRu.length)] : '';
-    const suffix = Math.random() > 0.4 ? nickSuffixRu[Math.floor(Math.random()*nickSuffixRu.length)] : '';
-    const sep = Math.random() > 0.5 ? '_' : '';
-    nick = `${decor[0]} ${prefix}${sep}${name}${suffix} ${decor[1]}`;
-  } else {
-    const engName = transliterate(name);
-    const decor = nickDecorEn[Math.floor(Math.random()*nickDecorEn.length)];
-    const prefix = Math.random() > 0.4 ? nickPrefixEn[Math.floor(Math.random()*nickPrefixEn.length)] : '';
-    const suffix = Math.random() > 0.4 ? nickSuffixEn[Math.floor(Math.random()*nickSuffixEn.length)] : '';
-    const sep = Math.random() > 0.5 ? '_' : '';
-    nick = `${decor[0]}${prefix}${sep}${engName}${suffix}${decor[1]}`;
-  }
+// ===================== DRAGGABLE WINDOWS =====================
+let dragState=null;const allWindows=document.querySelectorAll('.win-window');let topZ=200;
+function focusWin(id){const w=document.getElementById(id);if(!w)return;if(w.style.display==='none')w.style.display='';topZ++;w.style.zIndex=topZ;allWindows.forEach(x=>{x.querySelector('.win-titlebar').classList.toggle('inactive',x!==w);x.classList.toggle('active',x===w);});w.scrollIntoView({behavior:'smooth',block:'nearest'});}
+document.querySelectorAll('.win-window > .win-titlebar').forEach(tb=>{tb.addEventListener('mousedown',e=>{if(e.target.classList.contains('win-btn'))return;const w=tb.closest('.win-window');if(w.closest('.error-dialog'))return;focusWin(w.id);const st=getComputedStyle(w);if(st.position!=='absolute'){const r=w.getBoundingClientRect();w.style.position='absolute';w.style.left=r.left+window.scrollX+'px';w.style.top=r.top+window.scrollY+'px';w.style.width=r.width+'px';}const r=w.getBoundingClientRect();dragState={win:w,ox:e.clientX-r.left,oy:e.clientY-r.top};e.preventDefault();});});
+document.addEventListener('mousemove',e=>{if(!dragState)return;dragState.win.style.left=(e.pageX-dragState.ox)+'px';dragState.win.style.top=(e.pageY-dragState.oy)+'px';});
+document.addEventListener('mouseup',()=>{dragState=null;});
+allWindows.forEach(w=>{w.addEventListener('mousedown',()=>{if(w.id)focusWin(w.id);});});
 
-  const resultEl = document.getElementById('nickResult');
-  // Add sparkles
-  let sparkles = '';
-  for (let i = 0; i < 6; i++) {
-    sparkles += `<span class="sparkle" style="left:${Math.random()*90}%;top:${Math.random()*80}%;animation-delay:${Math.random()*2}s;">✦</span>`;
-  }
-  resultEl.innerHTML = sparkles + `<span style="position:relative;z-index:1;">${nick}</span>`;
-  resultEl.dataset.nick = nick;
-}
+// ===================== START MENU =====================
+function buildStartMenu(){const c=document.getElementById('startMenuItems');c.innerHTML='';const items=t('start_menu');items.forEach(it=>{const d=document.createElement('div');d.className='start-menu-item';d.innerHTML=`${it.icon} ${it.text}`;d.onclick=()=>{focusWin(it.win);toggleStartMenu();};c.appendChild(d);});const div=document.createElement('div');div.className='start-menu-divider';c.appendChild(div);const shut=document.createElement('div');shut.className='start-menu-item';shut.innerHTML='&#128721; '+(lang==='ru'?'Завершение работы...':'Shut Down...');shut.onclick=()=>toggleStartMenu();c.appendChild(shut);}
+buildStartMenu();
 
-function copyNick() {
-  const resultEl = document.getElementById('nickResult');
-  const nick = resultEl.dataset.nick;
-  if (!nick) return;
-  navigator.clipboard.writeText(nick).then(() => {
-    document.getElementById('nickCopied').textContent = '✓ Скопировано!';
-    playClick();
-    setTimeout(() => { document.getElementById('nickCopied').textContent = ''; }, 2000);
-  }).catch(() => {
-    // Fallback
-    document.getElementById('nickCopied').textContent = 'Выделите и скопируйте вручную';
-    setTimeout(() => { document.getElementById('nickCopied').textContent = ''; }, 2000);
-  });
-}
+function toggleStartMenu(){document.getElementById('startMenu').classList.toggle('visible');document.getElementById('startBtn').classList.toggle('pressed');}
+document.addEventListener('click',e=>{const m=document.getElementById('startMenu'),b=document.getElementById('startBtn');if(m.classList.contains('visible')&&!m.contains(e.target)&&!b.contains(e.target)){m.classList.remove('visible');b.classList.remove('pressed');}});
 
-document.getElementById('nickInput').addEventListener('keydown', e => {
-  if (e.key === 'Enter') generateNick();
-});
+// ===================== CLOCK =====================
+function updateClock(){const n=new Date();document.getElementById('trayClock').textContent=n.getHours().toString().padStart(2,'0')+':'+n.getMinutes().toString().padStart(2,'0');}
+updateClock();setInterval(updateClock,10000);
 
-// ==============================
-// ERROR DIALOGS
-// ==============================
-const errorMessages = [
-  { title: 'Ошибка памяти', icon: '&#9888;', text: 'Недостаточно памяти для отображения статистики.<br>Закройте лишние программы и попробуйте снова.<br><br>Доступно: 4,096 КБ из 16,384 КБ' },
-  { title: 'Ошибка сети', icon: '&#9888;', text: 'Сервер статистики не отвечает.<br>Проверьте подключение модема.<br><br>Ошибка 408: Request Timeout' },
-  { title: 'Internet Explorer', icon: '&#128308;', text: 'Программа выполнила недопустимую операцию и будет закрыта.<br><br>IEXPLORE вызвал ошибку<br>в модуле STATS98.DLL' },
-  { title: 'Системное сообщение', icon: '&#128187;', text: 'Обнаружен конфликт IRQ 7.<br>Принтер LPT1 и звуковая карта<br>используют одно прерывание.' },
-  { title: 'Dr. Watson', icon: '&#128270;', text: 'Возникла непредвиденная ошибка в приложении «Бюро Статистики».<br><br>Отправить отчёт об ошибке?<br>(требуется подключение к Интернет)' },
-];
+// ===================== WINDOW BUTTONS =====================
+document.querySelectorAll('.win-window > .win-titlebar .win-btn').forEach(btn=>{if(btn.textContent.trim()==='✕')btn.addEventListener('click',()=>{btn.closest('.win-window').style.display='none';});if(btn.textContent.trim()==='_')btn.addEventListener('click',()=>{const w=btn.closest('.win-window');const b=w.querySelector('.win-body')||w.querySelector('.fun-facts-body');const s=w.querySelector('.win-statusbar');const m=w.querySelector('.win-menubar');if(b)b.style.display=b.style.display==='none'?'':'none';if(s)s.style.display=s.style.display==='none'?'':'none';if(m)m.style.display=m.style.display==='none'?'':'none';});});
 
-let errorDialogVisible = false;
-
-function showErrorDialog() {
-  if (errorDialogVisible) return;
-  errorDialogVisible = true;
-  playError();
-
-  const err = errorMessages[Math.floor(Math.random() * errorMessages.length)];
-  const dialog = document.createElement('div');
-  dialog.className = 'error-dialog';
-  dialog.style.left = (100 + Math.random() * (window.innerWidth - 500)) + 'px';
-  dialog.style.top = (100 + Math.random() * (window.innerHeight - 300)) + 'px';
-
-  dialog.innerHTML = `
-    <div class="win-titlebar">
-      <span class="win-titlebar-text">${err.title}</span>
-      <div class="win-titlebar-buttons"><button class="win-btn" onclick="this.closest('.error-dialog').remove(); errorDialogVisible=false; playClick();">&#10005;</button></div>
-    </div>
-    <div class="error-body">
-      <div class="error-icon">${err.icon}</div>
-      <div class="error-text">${err.text}</div>
-    </div>
-    <div class="error-buttons">
-      <button class="retro-btn" onclick="this.closest('.error-dialog').remove(); errorDialogVisible=false; playClick();">OK</button>
-      <button class="retro-btn" onclick="this.closest('.error-dialog').remove(); errorDialogVisible=false; playClick();">Отмена</button>
-    </div>
-  `;
-
-  document.body.appendChild(dialog);
-
-  // Make error dialog draggable
-  const tb = dialog.querySelector('.win-titlebar');
-  let dragging = false, dx, dy;
-  tb.addEventListener('mousedown', e => {
-    if (e.target.classList.contains('win-btn')) return;
-    dragging = true;
-    const rect = dialog.getBoundingClientRect();
-    dx = e.clientX - rect.left;
-    dy = e.clientY - rect.top;
-    e.preventDefault();
-  });
-  document.addEventListener('mousemove', e => {
-    if (!dragging) return;
-    dialog.style.left = (e.clientX - dx) + 'px';
-    dialog.style.top = (e.clientY - dy) + 'px';
-  });
-  document.addEventListener('mouseup', () => { dragging = false; });
-}
-
-// Random error: first at 25-45 sec, then every 40-90 sec
-function scheduleError() {
-  const delay = 40000 + Math.random() * 50000;
-  setTimeout(() => {
-    showErrorDialog();
-    scheduleError();
-  }, delay);
-}
-setTimeout(() => { showErrorDialog(); scheduleError(); }, 25000 + Math.random() * 20000);
-
-// ==============================
-// DRAGGABLE WINDOWS
-// ==============================
-let dragState = null;
-const allWindows = document.querySelectorAll('.win-window');
-let topZ = 200;
-
-function focusWin(id) {
-  const win = document.getElementById(id);
-  if (!win) return;
-  if (win.style.display === 'none') win.style.display = '';
-  topZ++;
-  win.style.zIndex = topZ;
-  allWindows.forEach(w => {
-    w.querySelector('.win-titlebar').classList.toggle('inactive', w !== win);
-    w.classList.toggle('active', w === win);
-  });
-  win.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-}
-
-document.querySelectorAll('.win-titlebar').forEach(tb => {
-  tb.addEventListener('mousedown', e => {
-    if (e.target.classList.contains('win-btn')) return;
-    const win = tb.closest('.win-window');
-    if (win.closest('.error-dialog')) return;
-    focusWin(win.id);
-    const style = getComputedStyle(win);
-    if (style.position !== 'absolute') {
-      const rect = win.getBoundingClientRect();
-      win.style.position = 'absolute';
-      win.style.left = rect.left + window.scrollX + 'px';
-      win.style.top = rect.top + window.scrollY + 'px';
-      win.style.width = rect.width + 'px';
-    }
-    const rect = win.getBoundingClientRect();
-    dragState = { win, offsetX: e.clientX - rect.left, offsetY: e.clientY - rect.top };
-    e.preventDefault();
-  });
-});
-
-document.addEventListener('mousemove', e => {
-  if (!dragState) return;
-  dragState.win.style.left = (e.pageX - dragState.offsetX) + 'px';
-  dragState.win.style.top = (e.pageY - dragState.offsetY) + 'px';
-});
-document.addEventListener('mouseup', () => { dragState = null; });
-
-allWindows.forEach(w => { w.addEventListener('mousedown', () => { if(w.id) focusWin(w.id); }); });
-
-// ==============================
-// START MENU
-// ==============================
-function toggleStartMenu() {
-  const menu = document.getElementById('startMenu');
-  const btn = document.getElementById('startBtn');
-  menu.classList.toggle('visible');
-  btn.classList.toggle('pressed');
-}
-document.addEventListener('click', e => {
-  const menu = document.getElementById('startMenu');
-  const btn = document.getElementById('startBtn');
-  if (menu.classList.contains('visible') && !menu.contains(e.target) && !btn.contains(e.target)) {
-    menu.classList.remove('visible');
-    btn.classList.remove('pressed');
-  }
-});
-
-// ==============================
-// CLOCK
-// ==============================
-function updateClock() {
-  const now = new Date();
-  document.getElementById('trayClock').textContent = now.getHours().toString().padStart(2,'0') + ':' + now.getMinutes().toString().padStart(2,'0');
-}
-updateClock();
-setInterval(updateClock, 10000);
-
-// ==============================
-// WINDOW BUTTONS
-// ==============================
-document.querySelectorAll('.win-window > .win-titlebar .win-btn').forEach(btn => {
-  if (btn.textContent.trim() === '✕') {
-    btn.addEventListener('click', () => { btn.closest('.win-window').style.display = 'none'; });
-  }
-  if (btn.textContent.trim() === '_') {
-    btn.addEventListener('click', () => {
-      const win = btn.closest('.win-window');
-      const body = win.querySelector('.win-body') || win.querySelector('.fun-facts-body');
-      const sb = win.querySelector('.win-statusbar');
-      const mb = win.querySelector('.win-menubar');
-      if (body) body.style.display = body.style.display === 'none' ? '' : 'none';
-      if (sb) sb.style.display = sb.style.display === 'none' ? '' : 'none';
-      if (mb) mb.style.display = mb.style.display === 'none' ? '' : 'none';
-    });
-  }
-});
+// ===================== INIT LANG =====================
+applyLang();
 </script>
 </body>
 </html>
