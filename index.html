@@ -1,0 +1,1650 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Мировое Бюро Статистики — Информационный Портал v3.2</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&family=VT323&family=IBM+Plex+Mono:wght@400;600&display=swap');
+
+  :root {
+    --win-bg: #c0c0c0;
+    --win-title: #000080;
+    --win-title-inactive: #808080;
+    --win-highlight: #ffffff;
+    --win-shadow: #808080;
+    --win-dark-shadow: #404040;
+    --btn-face: #c0c0c0;
+    --desktop-bg: #008080;
+    --accent-magenta: #cc44aa;
+    --accent-yellow: #ffcc00;
+    --accent-teal: #00a89d;
+    --accent-purple: #6644aa;
+    --accent-coral: #e87461;
+    --accent-blue: #4488cc;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  /* === CUSTOM CURSOR (Windows 98 arrow) === */
+  body, html {
+    cursor: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="16" height="22" viewBox="0 0 16 22"><path d="M0 0 L0 17 L4 13 L7 19 L9 18 L6 12 L11 12 Z" fill="white" stroke="black" stroke-width="1"/></svg>') 0 0, auto;
+  }
+
+  a, button, .retro-btn, .win-btn, .start-btn, .start-menu-item, .bar-col, .pie-slice, .pie-legend-item, .retro-radio, .data-toggle, .taskbar-item, .tray-icon, .win-menubar span, .minesweeper-cell {
+    cursor: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="16" height="22" viewBox="0 0 16 22"><path d="M0 0 L0 17 L4 13 L7 19 L9 18 L6 12 L11 12 Z" fill="white" stroke="black" stroke-width="1"/></svg>') 0 0, pointer;
+  }
+
+  .win-titlebar {
+    cursor: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="16" height="22" viewBox="0 0 16 22"><path d="M0 0 L0 17 L4 13 L7 19 L9 18 L6 12 L11 12 Z" fill="white" stroke="black" stroke-width="1"/></svg>') 0 0, grab;
+  }
+
+  body {
+    font-family: 'VT323', monospace;
+    background: var(--desktop-bg);
+    min-height: 100vh;
+    overflow-x: hidden;
+    padding-bottom: 48px;
+  }
+
+  /* === LOADING SCREEN === */
+  .loading-screen {
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: #000;
+    z-index: 99999;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    transition: opacity 0.5s;
+  }
+
+  .loading-screen.hidden {
+    opacity: 0;
+    pointer-events: none;
+  }
+
+  .loading-logo {
+    font-family: 'Press Start 2P', monospace;
+    font-size: 16px;
+    color: var(--accent-yellow);
+    text-shadow: 0 0 10px rgba(255,204,0,0.5);
+    margin-bottom: 30px;
+    text-align: center;
+    line-height: 1.6;
+  }
+
+  .loading-bar-outer {
+    width: 400px;
+    max-width: 80vw;
+    height: 22px;
+    background: #1a1a2e;
+    border: 2px solid;
+    border-color: var(--win-dark-shadow) var(--win-highlight) var(--win-highlight) var(--win-dark-shadow);
+    padding: 2px;
+  }
+
+  .loading-bar-inner {
+    height: 100%;
+    width: 0%;
+    background: repeating-linear-gradient(90deg, #000080 0px, #000080 8px, #1084d0 8px, #1084d0 16px);
+    transition: width 0.3s;
+  }
+
+  .loading-text {
+    font-family: 'VT323', monospace;
+    font-size: 18px;
+    color: #888;
+    margin-top: 14px;
+    height: 22px;
+  }
+
+  .loading-modem {
+    font-family: 'VT323', monospace;
+    font-size: 14px;
+    color: #555;
+    margin-top: 8px;
+  }
+
+  /* === CRT SCANLINES === */
+  body::after {
+    content: '';
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,0,0,0.03) 2px, rgba(0,0,0,0.03) 4px);
+    pointer-events: none;
+    z-index: 10000;
+  }
+
+  body::before {
+    content: '';
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: radial-gradient(ellipse at center, transparent 60%, rgba(0,0,0,0.25) 100%);
+    pointer-events: none;
+    z-index: 9999;
+  }
+
+  .desktop-pattern {
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 48px;
+    background:
+      radial-gradient(circle at 20% 30%, rgba(0,180,170,0.3) 0%, transparent 50%),
+      radial-gradient(circle at 80% 70%, rgba(0,100,100,0.3) 0%, transparent 50%),
+      repeating-linear-gradient(45deg, transparent, transparent 20px, rgba(255,255,255,0.02) 20px, rgba(255,255,255,0.02) 22px);
+    z-index: 0;
+  }
+
+  /* === ERROR DIALOG === */
+  .error-dialog {
+    position: fixed;
+    z-index: 50000;
+    background: var(--win-bg);
+    border: 2px solid;
+    border-color: var(--win-highlight) var(--win-dark-shadow) var(--win-dark-shadow) var(--win-highlight);
+    box-shadow: 4px 4px 0 rgba(0,0,0,0.3);
+    min-width: 340px;
+    max-width: 420px;
+    font-family: 'IBM Plex Mono', monospace;
+  }
+
+  .error-dialog .win-titlebar {
+    background: linear-gradient(90deg, #000080, #1084d0);
+    padding: 3px 4px;
+    font-size: 12px;
+  }
+
+  .error-body {
+    padding: 16px 20px;
+    display: flex;
+    align-items: flex-start;
+    gap: 14px;
+  }
+
+  .error-icon {
+    font-size: 32px;
+    flex-shrink: 0;
+    line-height: 1;
+  }
+
+  .error-text {
+    font-size: 13px;
+    line-height: 1.5;
+    color: #000;
+  }
+
+  .error-buttons {
+    display: flex;
+    justify-content: center;
+    gap: 8px;
+    padding: 0 20px 14px;
+  }
+
+  .error-buttons .retro-btn {
+    min-width: 80px;
+    text-align: center;
+  }
+
+  /* === WINDOW STYLES === */
+  .win-window {
+    position: absolute;
+    background: var(--win-bg);
+    border: 2px solid;
+    border-color: var(--win-highlight) var(--win-dark-shadow) var(--win-dark-shadow) var(--win-highlight);
+    box-shadow: 1px 1px 0 var(--win-dark-shadow);
+    z-index: 10;
+    min-width: 200px;
+  }
+
+  .win-window.active { z-index: 100; }
+
+  .win-titlebar {
+    background: linear-gradient(90deg, var(--win-title), #1084d0);
+    color: white;
+    padding: 3px 4px;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 13px;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    user-select: none;
+    letter-spacing: 0.3px;
+  }
+
+  .win-titlebar.inactive {
+    background: linear-gradient(90deg, var(--win-title-inactive), #a0a0a0);
+  }
+
+  .win-titlebar-text {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .win-titlebar-buttons {
+    display: flex;
+    gap: 2px;
+    flex-shrink: 0;
+  }
+
+  .win-btn {
+    width: 16px;
+    height: 14px;
+    background: var(--btn-face);
+    border: 1px solid;
+    border-color: var(--win-highlight) var(--win-dark-shadow) var(--win-dark-shadow) var(--win-highlight);
+    font-size: 9px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'IBM Plex Mono', monospace;
+    font-weight: 600;
+    color: #000;
+    padding: 0;
+    line-height: 1;
+  }
+
+  .win-btn:active {
+    border-color: var(--win-dark-shadow) var(--win-highlight) var(--win-highlight) var(--win-dark-shadow);
+    padding: 1px 0 0 1px;
+  }
+
+  .win-menubar {
+    background: var(--win-bg);
+    border-bottom: 1px solid var(--win-shadow);
+    padding: 1px 0;
+    display: flex;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 12px;
+  }
+
+  .win-menubar span { padding: 2px 8px; }
+  .win-menubar span:hover { background: var(--win-title); color: white; }
+
+  .win-body {
+    padding: 8px;
+    border: 2px solid;
+    border-color: var(--win-shadow) var(--win-highlight) var(--win-highlight) var(--win-shadow);
+    margin: 2px;
+    background: white;
+    overflow: auto;
+  }
+
+  .win-statusbar {
+    background: var(--win-bg);
+    border-top: 1px solid var(--win-highlight);
+    padding: 2px 6px;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px;
+    display: flex;
+    gap: 8px;
+  }
+
+  .win-statusbar-section {
+    border: 1px solid;
+    border-color: var(--win-shadow) var(--win-highlight) var(--win-highlight) var(--win-shadow);
+    padding: 1px 6px;
+    flex: 1;
+  }
+
+  .retro-btn {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 12px;
+    background: var(--btn-face);
+    border: 2px solid;
+    border-color: var(--win-highlight) var(--win-dark-shadow) var(--win-dark-shadow) var(--win-highlight);
+    padding: 4px 16px;
+    position: relative;
+  }
+
+  .retro-btn:active {
+    border-color: var(--win-dark-shadow) var(--win-highlight) var(--win-highlight) var(--win-dark-shadow);
+    padding: 5px 15px 3px 17px;
+  }
+
+  .retro-btn:focus { outline: 1px dotted #000; outline-offset: -4px; }
+
+  .retro-btn.pressed {
+    border-color: var(--win-dark-shadow) var(--win-highlight) var(--win-highlight) var(--win-dark-shadow);
+    background: #b0b0b0;
+  }
+
+  /* === BANNER === */
+  .site-banner {
+    position: relative;
+    z-index: 5;
+    background: linear-gradient(180deg, #1a0a3e 0%, #2d1066 40%, #1a0a3e 100%);
+    border-bottom: 3px solid var(--accent-yellow);
+    padding: 15px 20px 10px;
+    text-align: center;
+    overflow: hidden;
+  }
+
+  .site-banner::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background:
+      repeating-linear-gradient(90deg, transparent, transparent 3px, rgba(255,255,255,0.02) 3px, rgba(255,255,255,0.02) 4px),
+      repeating-linear-gradient(0deg, transparent, transparent 3px, rgba(255,255,255,0.015) 3px, rgba(255,255,255,0.015) 4px);
+  }
+
+  .banner-title {
+    font-family: 'Press Start 2P', monospace;
+    font-size: 20px;
+    color: var(--accent-yellow);
+    text-shadow: 2px 2px 0 #cc6600, 0 0 20px rgba(255,204,0,0.4);
+    margin-bottom: 6px;
+    position: relative;
+  }
+
+  .banner-subtitle {
+    font-family: 'VT323', monospace;
+    font-size: 22px;
+    color: #88ccff;
+    letter-spacing: 3px;
+    position: relative;
+  }
+
+  .banner-stars { position: absolute; top: 0; left: 0; right: 0; bottom: 0; overflow: hidden; }
+  .banner-stars span { position: absolute; color: white; font-size: 10px; animation: twinkle 2s infinite; }
+  @keyframes twinkle { 0%, 100% { opacity: 0.2; } 50% { opacity: 1; } }
+
+  /* === MARQUEE === */
+  .marquee-bar {
+    background: #000080;
+    color: var(--accent-yellow);
+    font-family: 'VT323', monospace;
+    font-size: 18px;
+    padding: 4px 0;
+    overflow: hidden;
+    white-space: nowrap;
+    position: relative;
+    z-index: 5;
+    border-bottom: 2px solid var(--accent-teal);
+  }
+
+  .marquee-inner { display: inline-block; animation: marquee 30s linear infinite; padding-left: 100%; }
+  @keyframes marquee { 0% { transform: translateX(0); } 100% { transform: translateX(-100%); } }
+
+  .content-area { position: relative; z-index: 5; padding: 20px; min-height: calc(100vh - 200px); }
+
+  /* === POPULATION === */
+  .population-widget { text-align: center; padding: 12px; }
+  .population-label { font-family: 'Press Start 2P', monospace; font-size: 10px; color: #660066; margin-bottom: 10px; letter-spacing: 1px; }
+  .odometer { display: flex; justify-content: center; gap: 3px; margin-bottom: 8px; }
+  .odometer-digit { width: 32px; height: 48px; background: #1a1a2e; border: 2px solid; border-color: #404040 #808080 #808080 #404040; border-radius: 3px; display: flex; align-items: center; justify-content: center; font-family: 'VT323', monospace; font-size: 36px; color: #00ff88; text-shadow: 0 0 8px rgba(0,255,136,0.5); position: relative; overflow: hidden; }
+  .odometer-digit::after { content: ''; position: absolute; top: 50%; left: 0; right: 0; height: 1px; background: rgba(0,0,0,0.3); }
+  .odometer-sep { width: 10px; height: 48px; display: flex; align-items: center; justify-content: center; font-family: 'VT323', monospace; font-size: 36px; color: #666; }
+  .population-rate { font-family: 'VT323', monospace; font-size: 16px; color: #888; }
+  .population-rate span { color: #00aa66; font-weight: bold; }
+
+  /* === BAR CHART === */
+  .bar-chart { display: flex; align-items: flex-end; gap: 12px; height: 200px; padding: 10px 10px 30px; position: relative; }
+  .bar-chart::before { content: ''; position: absolute; bottom: 28px; left: 0; right: 0; height: 1px; background: #999; }
+  .bar-col { flex: 1; display: flex; flex-direction: column; align-items: center; position: relative; }
+
+  .bar-fill { width: 100%; max-width: 50px; background: linear-gradient(180deg, var(--accent-teal), #006666); border: 1px solid; border-color: #00ccbb #004444 #004444 #00ccbb; transition: all 0.2s; position: relative; animation: barGrow 1s ease-out forwards; transform-origin: bottom; }
+  .bar-col:nth-child(2) .bar-fill { background: linear-gradient(180deg, var(--accent-magenta), #882266); border-color: #ee66bb #661144 #661144 #ee66bb; }
+  .bar-col:nth-child(3) .bar-fill { background: linear-gradient(180deg, var(--accent-yellow), #aa8800); border-color: #ffee44 #886600 #886600 #ffee44; }
+  .bar-col:nth-child(4) .bar-fill { background: linear-gradient(180deg, var(--accent-purple), #442288); border-color: #8866cc #331166 #331166 #8866cc; }
+  .bar-col:nth-child(5) .bar-fill { background: linear-gradient(180deg, var(--accent-coral), #aa4433); border-color: #ff9988 #882222 #882222 #ff9988; }
+  .bar-col:nth-child(6) .bar-fill { background: linear-gradient(180deg, var(--accent-blue), #225588); border-color: #66aadd #224466 #224466 #66aadd; }
+  .bar-col:hover .bar-fill { filter: brightness(1.2); box-shadow: 0 0 10px rgba(255,255,255,0.3); }
+
+  @keyframes barGrow { from { transform: scaleY(0); } to { transform: scaleY(1); } }
+
+  .bar-value { font-family: 'Press Start 2P', monospace; font-size: 8px; margin-bottom: 4px; color: #333; opacity: 0; transition: opacity 0.2s; }
+  .bar-col:hover .bar-value { opacity: 1; }
+  .bar-label { font-family: 'VT323', monospace; font-size: 14px; color: #555; position: absolute; bottom: -22px; text-align: center; white-space: nowrap; }
+  .bar-tooltip { display: none; position: absolute; top: -40px; left: 50%; transform: translateX(-50%); background: #ffffcc; border: 1px solid #000; padding: 3px 8px; font-family: 'VT323', monospace; font-size: 15px; white-space: nowrap; z-index: 50; box-shadow: 2px 2px 0 rgba(0,0,0,0.3); }
+  .bar-col:hover .bar-tooltip { display: block; }
+
+  /* === PIE === */
+  .pie-container { display: flex; align-items: center; gap: 20px; padding: 10px; flex-wrap: wrap; justify-content: center; }
+  .pie-chart-wrapper { position: relative; width: 180px; height: 180px; flex-shrink: 0; }
+  .pie-chart-svg { width: 180px; height: 180px; transform: rotate(-90deg); }
+  .pie-slice { transition: all 0.2s; }
+  .pie-slice:hover, .pie-slice.active { filter: brightness(1.15); stroke: white; stroke-width: 2; }
+  .pie-legend { font-family: 'VT323', monospace; font-size: 17px; }
+  .pie-legend-item { display: flex; align-items: center; gap: 8px; padding: 3px 6px; transition: background 0.15s; }
+  .pie-legend-item:hover, .pie-legend-item.active { background: #e0e0ff; }
+  .pie-legend-color { width: 14px; height: 14px; border: 1px solid #333; flex-shrink: 0; }
+  .pie-detail-box { background: #ffffcc; border: 2px solid #888800; padding: 8px 12px; font-family: 'VT323', monospace; font-size: 17px; margin-top: 10px; min-height: 50px; display: flex; align-items: center; justify-content: center; text-align: center; }
+
+  /* === FUN FACTS === */
+  .fun-facts-body { padding: 12px; min-height: 120px; display: flex; flex-direction: column; justify-content: space-between; background: linear-gradient(135deg, #fff8e0, #fff0f5); }
+  .fact-icon { font-size: 28px; text-align: center; margin-bottom: 8px; }
+  .fact-text { font-family: 'VT323', monospace; font-size: 20px; text-align: center; color: #333; line-height: 1.3; min-height: 60px; display: flex; align-items: center; justify-content: center; }
+  .fact-nav { display: flex; justify-content: center; gap: 10px; margin-top: 10px; }
+  .fact-counter { font-family: 'Press Start 2P', monospace; font-size: 8px; text-align: center; color: #999; margin-top: 6px; }
+
+  /* === TOGGLES === */
+  .data-toggle-group { display: flex; gap: 0; margin-bottom: 10px; }
+  .data-toggle { font-family: 'IBM Plex Mono', monospace; font-size: 12px; background: var(--btn-face); border: 2px solid; border-color: var(--win-highlight) var(--win-dark-shadow) var(--win-dark-shadow) var(--win-highlight); padding: 4px 12px; }
+  .data-toggle.active { border-color: var(--win-dark-shadow) var(--win-highlight) var(--win-highlight) var(--win-dark-shadow); background: #b0b0b0; padding: 5px 11px 3px 13px; }
+
+  .retro-radio { display: flex; align-items: center; gap: 6px; font-family: 'VT323', monospace; font-size: 17px; padding: 3px 0; }
+  .retro-radio-dot { width: 14px; height: 14px; border-radius: 50%; border: 2px solid; border-color: var(--win-shadow) var(--win-highlight) var(--win-highlight) var(--win-shadow); background: white; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+  .retro-radio.selected .retro-radio-dot::after { content: ''; width: 6px; height: 6px; border-radius: 50%; background: #000; }
+
+  /* === VISITOR COUNTER === */
+  .visitor-counter { display: flex; align-items: center; justify-content: center; gap: 4px; margin: 12px 0; }
+  .visitor-digit { width: 18px; height: 24px; background: #111; color: #0f0; font-family: 'VT323', monospace; font-size: 22px; display: flex; align-items: center; justify-content: center; border: 1px solid #333; }
+
+  .pixel-divider { height: 8px; background: repeating-linear-gradient(90deg, var(--accent-teal) 0px, var(--accent-teal) 8px, var(--accent-magenta) 8px, var(--accent-magenta) 16px, var(--accent-yellow) 16px, var(--accent-yellow) 24px, var(--accent-purple) 24px, var(--accent-purple) 32px); image-rendering: pixelated; margin: 12px 0; }
+
+  .blink { animation: blink-anim 1.2s step-end infinite; }
+  @keyframes blink-anim { 0%, 100% { opacity: 1; } 50% { opacity: 0; } }
+
+  /* === MINESWEEPER === */
+  .minesweeper-grid {
+    display: grid;
+    grid-template-columns: repeat(6, 32px);
+    gap: 1px;
+    background: #808080;
+    border: 2px solid;
+    border-color: var(--win-shadow) var(--win-highlight) var(--win-highlight) var(--win-shadow);
+    padding: 1px;
+    width: fit-content;
+    margin: 8px auto;
+  }
+
+  .minesweeper-cell {
+    width: 32px;
+    height: 32px;
+    background: var(--btn-face);
+    border: 2px solid;
+    border-color: var(--win-highlight) var(--win-dark-shadow) var(--win-dark-shadow) var(--win-highlight);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'Press Start 2P', monospace;
+    font-size: 9px;
+    user-select: none;
+    transition: all 0.1s;
+  }
+
+  .minesweeper-cell:hover:not(.revealed) {
+    background: #d0d0d0;
+  }
+
+  .minesweeper-cell.revealed {
+    border: 1px solid #bbb;
+    background: #e0e0e0;
+    font-family: 'VT323', monospace;
+    font-size: 13px;
+    line-height: 1.1;
+    text-align: center;
+    padding: 2px;
+  }
+
+  .minesweeper-cell.bomb {
+    background: #ff4444;
+  }
+
+  .minesweeper-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 4px 8px;
+    margin-bottom: 6px;
+  }
+
+  .mine-counter {
+    font-family: 'VT323', monospace;
+    font-size: 22px;
+    background: #1a1a2e;
+    color: #ff3333;
+    padding: 2px 8px;
+    border: 1px inset #444;
+    min-width: 40px;
+    text-align: center;
+  }
+
+  .mine-face {
+    font-size: 20px;
+    width: 30px;
+    height: 30px;
+    background: var(--btn-face);
+    border: 2px solid;
+    border-color: var(--win-highlight) var(--win-dark-shadow) var(--win-dark-shadow) var(--win-highlight);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .mine-face:active {
+    border-color: var(--win-dark-shadow) var(--win-highlight) var(--win-highlight) var(--win-dark-shadow);
+  }
+
+  /* === NICKNAME GENERATOR === */
+  .nick-input {
+    font-family: 'VT323', monospace;
+    font-size: 20px;
+    border: 2px solid;
+    border-color: var(--win-shadow) var(--win-highlight) var(--win-highlight) var(--win-shadow);
+    padding: 4px 8px;
+    background: white;
+    width: 100%;
+    outline: none;
+  }
+
+  .nick-input:focus {
+    background: #fffff0;
+  }
+
+  .nick-result {
+    font-family: 'Press Start 2P', monospace;
+    font-size: 11px;
+    text-align: center;
+    padding: 12px;
+    background: linear-gradient(135deg, #1a0a3e, #2d1066);
+    color: #00ffcc;
+    text-shadow: 0 0 10px rgba(0,255,204,0.5);
+    border: 2px solid;
+    border-color: var(--win-shadow) var(--win-highlight) var(--win-highlight) var(--win-shadow);
+    margin-top: 8px;
+    min-height: 50px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    word-break: break-all;
+    line-height: 1.5;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .nick-result .sparkle {
+    position: absolute;
+    color: var(--accent-yellow);
+    font-size: 10px;
+    animation: twinkle 1.5s infinite;
+  }
+
+  .nick-lang-toggle {
+    display: flex;
+    gap: 0;
+    margin: 8px 0;
+  }
+
+  .nick-copied {
+    font-family: 'VT323', monospace;
+    font-size: 16px;
+    color: #00aa66;
+    text-align: center;
+    margin-top: 4px;
+    height: 20px;
+  }
+
+  /* === MINI CHART === */
+  .mini-chart { display: flex; align-items: flex-end; gap: 4px; height: 60px; padding-top: 5px; }
+  .mini-bar { flex: 1; background: var(--accent-teal); border: 1px solid rgba(0,0,0,0.2); transition: height 0.5s ease; }
+  .mini-bar:nth-child(odd) { background: var(--accent-purple); }
+
+  .data-table { width: 100%; border-collapse: collapse; font-family: 'VT323', monospace; font-size: 16px; }
+  .data-table th { background: var(--win-title); color: white; padding: 4px 8px; text-align: left; font-weight: normal; }
+  .data-table td { padding: 3px 8px; border-bottom: 1px solid #ccc; }
+  .data-table tr:nth-child(even) td { background: #f0f0f8; }
+  .data-table tr:hover td { background: #e0e0ff; }
+
+  .construction-icon { display: inline-block; font-size: 20px; animation: constructionBounce 0.6s infinite alternate; }
+  @keyframes constructionBounce { from { transform: translateY(0); } to { transform: translateY(-3px); } }
+
+  /* === SOUND TOGGLE === */
+  .sound-toggle {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px;
+  }
+
+  /* === TASKBAR === */
+  .taskbar { position: fixed; bottom: 0; left: 0; right: 0; height: 40px; background: var(--win-bg); border-top: 2px solid var(--win-highlight); display: flex; align-items: center; padding: 2px 4px; gap: 4px; z-index: 9998; font-family: 'IBM Plex Mono', monospace; }
+  .start-btn { display: flex; align-items: center; gap: 4px; background: var(--btn-face); border: 2px solid; border-color: var(--win-highlight) var(--win-dark-shadow) var(--win-dark-shadow) var(--win-highlight); padding: 3px 8px; font-family: 'IBM Plex Mono', monospace; font-size: 13px; font-weight: 600; height: 30px; }
+  .start-btn:active, .start-btn.pressed { border-color: var(--win-dark-shadow) var(--win-highlight) var(--win-highlight) var(--win-dark-shadow); }
+  .start-btn-logo { width: 20px; height: 20px; display: grid; grid-template: 1fr 1fr / 1fr 1fr; gap: 1px; }
+  .start-btn-logo div:nth-child(1) { background: #ff0000; }
+  .start-btn-logo div:nth-child(2) { background: #00aa00; }
+  .start-btn-logo div:nth-child(3) { background: #0000ff; }
+  .start-btn-logo div:nth-child(4) { background: #ffcc00; }
+  .taskbar-divider { width: 2px; height: 28px; border-left: 1px solid var(--win-shadow); border-right: 1px solid var(--win-highlight); margin: 0 2px; }
+  .taskbar-item { background: var(--btn-face); border: 2px solid; border-color: var(--win-highlight) var(--win-dark-shadow) var(--win-dark-shadow) var(--win-highlight); padding: 2px 8px; font-size: 11px; height: 28px; display: flex; align-items: center; max-width: 140px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; flex-shrink: 1; }
+  .taskbar-item.active { border-color: var(--win-dark-shadow) var(--win-highlight) var(--win-highlight) var(--win-dark-shadow); background: #b0b0b0; }
+  .taskbar-tray { margin-left: auto; display: flex; align-items: center; gap: 6px; border: 1px solid; border-color: var(--win-shadow) var(--win-highlight) var(--win-highlight) var(--win-shadow); padding: 2px 10px; height: 28px; font-size: 12px; }
+  .tray-icon { font-size: 14px; }
+
+  .start-menu { display: none; position: fixed; bottom: 40px; left: 0; width: 240px; background: var(--win-bg); border: 2px solid; border-color: var(--win-highlight) var(--win-dark-shadow) var(--win-dark-shadow) var(--win-highlight); z-index: 9999; font-family: 'IBM Plex Mono', monospace; font-size: 12px; }
+  .start-menu.visible { display: block; }
+  .start-menu-sidebar { position: absolute; left: 0; top: 0; bottom: 0; width: 24px; background: linear-gradient(0deg, #000080, #1084d0); writing-mode: vertical-rl; text-orientation: mixed; color: white; font-weight: 600; font-size: 14px; display: flex; align-items: center; justify-content: flex-end; padding-bottom: 8px; letter-spacing: 2px; }
+  .start-menu-items { margin-left: 24px; padding: 4px 0; }
+  .start-menu-item { display: flex; align-items: center; gap: 8px; padding: 6px 12px; }
+  .start-menu-item:hover { background: var(--win-title); color: white; }
+  .start-menu-divider { height: 1px; background: var(--win-shadow); margin: 2px 24px 2px 36px; border-bottom: 1px solid var(--win-highlight); }
+
+  .windows-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; max-width: 1100px; margin: 0 auto; }
+  .windows-grid .win-window { position: relative; }
+  .wide-window { grid-column: 1 / -1; }
+
+  .page-footer { text-align: center; padding: 20px; position: relative; z-index: 5; }
+  .page-footer p { font-family: 'VT323', monospace; font-size: 16px; color: #aaffcc; text-shadow: 0 0 5px rgba(0,255,100,0.3); margin: 3px 0; }
+  .construction-text { font-family: 'Press Start 2P', monospace; font-size: 9px; color: var(--accent-yellow); text-shadow: 1px 1px 0 #aa6600; }
+
+  @media (max-width: 750px) {
+    .windows-grid { grid-template-columns: 1fr; }
+    .banner-title { font-size: 13px; }
+    .odometer-digit { width: 24px; height: 36px; font-size: 28px; }
+    .minesweeper-grid { grid-template-columns: repeat(6, 28px); }
+    .minesweeper-cell { width: 28px; height: 28px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ===== LOADING SCREEN ===== -->
+<div class="loading-screen" id="loadingScreen">
+  <div class="loading-logo">
+    МИРОВОЕ БЮРО<br>СТАТИСТИКИ
+  </div>
+  <div class="loading-bar-outer">
+    <div class="loading-bar-inner" id="loadingBar"></div>
+  </div>
+  <div class="loading-text" id="loadingText"></div>
+  <div class="loading-modem" id="loadingModem">Модем: US Robotics 28.8 Kbps</div>
+</div>
+
+<div class="desktop-pattern"></div>
+
+<!-- ===== BANNER ===== -->
+<div class="site-banner">
+  <div class="banner-stars" id="bannerStars"></div>
+  <div class="banner-title">&#127760; МИРОВОЕ БЮРО СТАТИСТИКИ &#127760;</div>
+  <div class="banner-subtitle">~ Информационный Портал v3.2 ~</div>
+</div>
+
+<div class="marquee-bar">
+  <div class="marquee-inner">
+    &#9733; ДОБРО ПОЖАЛОВАТЬ В МИРОВОЕ БЮРО СТАТИСТИКИ! &#9733; Обновлено: 14 ноября 1998 &#9733; Новые данные по потреблению кофе! &#9733; НОВИНКА: Генератор интернет-имён! &#9733; Мини-Сапёр: найди все факты! &#9733; Население Земли растёт каждую секунду! &#9733; Сайт лучше просматривать в Netscape Navigator 4.0 при разрешении 800x600 &#9733;
+  </div>
+</div>
+
+<div class="content-area">
+  <div class="windows-grid">
+
+    <!-- POPULATION -->
+    <div class="win-window wide-window" id="winPopulation">
+      <div class="win-titlebar" id="drag-winPopulation">
+        <span class="win-titlebar-text">&#127758; Население Земли — Счётчик реального времени</span>
+        <div class="win-titlebar-buttons"><button class="win-btn">_</button><button class="win-btn">&#9633;</button><button class="win-btn">&#10005;</button></div>
+      </div>
+      <div class="win-body">
+        <div class="population-widget">
+          <div class="population-label">ТЕКУЩЕЕ НАСЕЛЕНИЕ ПЛАНЕТЫ ЗЕМЛЯ</div>
+          <div class="odometer" id="odometer"></div>
+          <div class="population-rate">Прирост: <span>+2.5 чел/сек</span> &bull; Источник: Бюро Глобальной Переписи, 1998</div>
+        </div>
+      </div>
+      <div class="win-statusbar">
+        <div class="win-statusbar-section">Обновляется в реальном времени</div>
+        <div class="win-statusbar-section" style="flex:0;white-space:nowrap;">&#9200; LIVE</div>
+      </div>
+    </div>
+
+    <!-- COFFEE -->
+    <div class="win-window" id="winCoffee">
+      <div class="win-titlebar" id="drag-winCoffee">
+        <span class="win-titlebar-text">&#9749; Потребление кофе</span>
+        <div class="win-titlebar-buttons"><button class="win-btn">_</button><button class="win-btn">&#9633;</button><button class="win-btn">&#10005;</button></div>
+      </div>
+      <div class="win-menubar"><span>Файл</span><span>Вид</span><span>Данные</span><span>Помощь</span></div>
+      <div class="win-body" style="padding:4px;">
+        <div style="padding:4px 8px; font-size:15px; color:#555; font-family:'VT323',monospace;">Мировое потребление кофе по странам (кг/чел в год), 1997</div>
+        <div class="data-toggle-group" style="padding:0 8px;">
+          <button class="data-toggle active" onclick="toggleCoffeeView('chart', this)">&#9608; Диаграмма</button>
+          <button class="data-toggle" onclick="toggleCoffeeView('table', this)">&#9776; Таблица</button>
+        </div>
+        <div id="coffeeChartView"><div class="bar-chart" id="coffeeChart"></div></div>
+        <div id="coffeeTableView" style="display:none;"></div>
+      </div>
+      <div class="win-statusbar"><div class="win-statusbar-section">6 стран</div><div class="win-statusbar-section" style="flex:0;white-space:nowrap;">1997</div></div>
+    </div>
+
+    <!-- PETS PIE -->
+    <div class="win-window" id="winPets">
+      <div class="win-titlebar" id="drag-winPets">
+        <span class="win-titlebar-text">&#128062; Домашние животные</span>
+        <div class="win-titlebar-buttons"><button class="win-btn">_</button><button class="win-btn">&#9633;</button><button class="win-btn">&#10005;</button></div>
+      </div>
+      <div class="win-body" style="padding:6px;">
+        <div style="padding:2px 6px 6px; font-size:15px; color:#555; font-family:'VT323',monospace;">Распределение домашних животных в мире, 1998</div>
+        <div class="pie-container" id="pieContainer"></div>
+        <div class="pie-detail-box" id="pieDetail">Нажмите на сектор для подробностей</div>
+      </div>
+      <div class="win-statusbar"><div class="win-statusbar-section">Источник: Всемирная перепись животных</div></div>
+    </div>
+
+    <!-- MINESWEEPER -->
+    <div class="win-window" id="winMine">
+      <div class="win-titlebar" id="drag-winMine">
+        <span class="win-titlebar-text">&#128163; Сапёр Знаний</span>
+        <div class="win-titlebar-buttons"><button class="win-btn">_</button><button class="win-btn">&#9633;</button><button class="win-btn">&#10005;</button></div>
+      </div>
+      <div class="win-body" style="padding:6px; background:#c0c0c0;">
+        <div class="minesweeper-header">
+          <div class="mine-counter" id="mineCounter">5</div>
+          <div class="mine-face" id="mineFace" onclick="initMinesweeper()">&#128578;</div>
+          <div class="mine-counter" id="mineTimer">0</div>
+        </div>
+        <div class="minesweeper-grid" id="mineGrid"></div>
+        <div style="font-family:'VT323',monospace; font-size:14px; color:#555; text-align:center; margin-top:6px;">Нажимай на ячейки — найди факты, избегай бомб!</div>
+      </div>
+      <div class="win-statusbar"><div class="win-statusbar-section" id="mineStatus">Готово</div></div>
+    </div>
+
+    <!-- NICKNAME GENERATOR -->
+    <div class="win-window" id="winNick">
+      <div class="win-titlebar" id="drag-winNick">
+        <span class="win-titlebar-text">&#128640; Генератор Интернет-Имени 98</span>
+        <div class="win-titlebar-buttons"><button class="win-btn">_</button><button class="win-btn">&#9633;</button><button class="win-btn">&#10005;</button></div>
+      </div>
+      <div class="win-body" style="padding:10px;">
+        <div style="font-family:'VT323',monospace; font-size:17px; color:#555; margin-bottom:6px;">Введите ваше имя:</div>
+        <input class="nick-input" id="nickInput" type="text" placeholder="Ваше имя..." maxlength="20">
+        <div class="nick-lang-toggle">
+          <button class="data-toggle active" id="nickLangRu" onclick="setNickLang('ru')">&#127479;&#127482; Русский</button>
+          <button class="data-toggle" id="nickLangEn" onclick="setNickLang('en')">&#127468;&#127463; English</button>
+        </div>
+        <div style="display:flex; gap:6px;">
+          <button class="retro-btn" onclick="generateNick()" style="flex:1;">&#9733; Сгенерировать! &#9733;</button>
+          <button class="retro-btn" onclick="copyNick()" style="flex:0; white-space:nowrap;">&#128203; Копировать</button>
+        </div>
+        <div class="nick-result" id="nickResult">
+          <span style="color:#888; font-family:'VT323',monospace; font-size:16px;">Ваш крутой ник появится здесь...</span>
+        </div>
+        <div class="nick-copied" id="nickCopied"></div>
+      </div>
+      <div class="win-statusbar"><div class="win-statusbar-section">Придумай себе ник для IRC/ICQ!</div></div>
+    </div>
+
+    <!-- FUN FACTS -->
+    <div class="win-window" id="winFacts">
+      <div class="win-titlebar" id="drag-winFacts">
+        <span class="win-titlebar-text">&#128161; Интересные факты</span>
+        <div class="win-titlebar-buttons"><button class="win-btn">_</button><button class="win-btn">&#9633;</button><button class="win-btn">&#10005;</button></div>
+      </div>
+      <div class="fun-facts-body">
+        <div class="fact-icon" id="factIcon">&#128202;</div>
+        <div class="fact-text" id="factText"></div>
+        <div class="fact-nav">
+          <button class="retro-btn" onclick="prevFact()">&#9664; Назад</button>
+          <button class="retro-btn" onclick="nextFact()">Далее &#9654;</button>
+        </div>
+        <div class="fact-counter" id="factCounter"></div>
+      </div>
+    </div>
+
+    <!-- EXTRA DATA -->
+    <div class="win-window" id="winExtra">
+      <div class="win-titlebar" id="drag-winExtra">
+        <span class="win-titlebar-text">&#128200; Дополнительные данные</span>
+        <div class="win-titlebar-buttons"><button class="win-btn">_</button><button class="win-btn">&#9633;</button><button class="win-btn">&#10005;</button></div>
+      </div>
+      <div class="win-body" style="padding:10px;">
+        <div style="font-family:'VT323',monospace; font-size:16px; margin-bottom:8px; color:#555;">Выберите категорию:</div>
+        <div id="extraRadios"></div>
+        <div class="pixel-divider"></div>
+        <div class="mini-chart" id="extraChart"></div>
+        <div style="font-family:'VT323',monospace; font-size:14px; color:#888; margin-top:6px; text-align:center;" id="extraLabel"></div>
+      </div>
+      <div class="win-statusbar"><div class="win-statusbar-section" id="extraStatus">Готово</div></div>
+    </div>
+
+    <!-- ABOUT -->
+    <div class="win-window" id="winAbout">
+      <div class="win-titlebar" id="drag-winAbout">
+        <span class="win-titlebar-text">&#128196; О портале</span>
+        <div class="win-titlebar-buttons"><button class="win-btn">_</button><button class="win-btn">&#9633;</button><button class="win-btn">&#10005;</button></div>
+      </div>
+      <div class="win-body" style="text-align:center; padding:12px;">
+        <div style="font-family:'Press Start 2P',monospace; font-size:9px; color:var(--accent-purple); margin-bottom:10px;">&#127760; МИРОВОЕ БЮРО СТАТИСТИКИ &#127760;</div>
+        <div style="font-family:'VT323',monospace; font-size:17px; color:#555; line-height:1.4;">
+          Добро пожаловать на наш информационный портал!<br>
+          Здесь вы найдёте самые актуальные данные<br>
+          о жизни нашей планеты.<br><br>
+          <span class="construction-icon">&#128679;</span>
+          <span class="construction-text blink">РАЗДЕЛ В РАЗРАБОТКЕ</span>
+          <span class="construction-icon">&#128679;</span>
+        </div>
+        <div class="pixel-divider"></div>
+        <div style="font-family:'VT323',monospace; font-size:16px; color:#777;">Вы — посетитель номер:</div>
+        <div class="visitor-counter" id="visitorCounter"></div>
+        <div style="font-family:'VT323',monospace; font-size:14px; color:#999; margin-top:6px;">
+          Последнее обновление: 14.11.1998<br>
+          Лучший просмотр: 800&#215;600, 256 цветов<br>
+          Совместим с Netscape Navigator 4.0+<br>
+          <br>
+          <a href="#" style="color:var(--accent-blue);">&#128231; Написать веб-мастеру</a>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<div class="page-footer">
+  <div class="pixel-divider" style="max-width:400px;margin:0 auto 12px;"></div>
+  <p>&copy; 1997-1998 Мировое Бюро Статистики. Все права защищены.</p>
+  <p style="font-size:14px;">Сделано с &#9829; для сети Интернет</p>
+</div>
+
+<!-- TASKBAR -->
+<div class="taskbar">
+  <button class="start-btn" id="startBtn" onclick="toggleStartMenu()">
+    <div class="start-btn-logo"><div></div><div></div><div></div><div></div></div>
+    Пуск
+  </button>
+  <div class="taskbar-divider"></div>
+  <div class="taskbar-item active" onclick="focusWin('winPopulation')">&#127758; Население</div>
+  <div class="taskbar-item" onclick="focusWin('winCoffee')">&#9749; Кофе</div>
+  <div class="taskbar-item" onclick="focusWin('winMine')">&#128163; Сапёр</div>
+  <div class="taskbar-item" onclick="focusWin('winNick')">&#128640; Ник</div>
+  <div class="taskbar-divider"></div>
+  <div class="taskbar-tray">
+    <span class="tray-icon" id="soundToggle" title="Звук" onclick="toggleSound()">&#128266;</span>
+    <span class="tray-icon" title="Сеть">&#127760;</span>
+    <span id="trayClock" style="font-size:12px;"></span>
+  </div>
+</div>
+
+<!-- START MENU -->
+<div class="start-menu" id="startMenu">
+  <div class="start-menu-sidebar">Статистика98</div>
+  <div class="start-menu-items">
+    <div class="start-menu-item" onclick="focusWin('winPopulation'); toggleStartMenu();">&#127758; Население Земли</div>
+    <div class="start-menu-item" onclick="focusWin('winCoffee'); toggleStartMenu();">&#9749; Потребление кофе</div>
+    <div class="start-menu-item" onclick="focusWin('winPets'); toggleStartMenu();">&#128062; Домашние животные</div>
+    <div class="start-menu-item" onclick="focusWin('winMine'); toggleStartMenu();">&#128163; Сапёр Знаний</div>
+    <div class="start-menu-item" onclick="focusWin('winNick'); toggleStartMenu();">&#128640; Генератор ника</div>
+    <div class="start-menu-item" onclick="focusWin('winFacts'); toggleStartMenu();">&#128161; Интересные факты</div>
+    <div class="start-menu-item" onclick="focusWin('winExtra'); toggleStartMenu();">&#128200; Дополнительные данные</div>
+    <div class="start-menu-divider"></div>
+    <div class="start-menu-item" onclick="focusWin('winAbout'); toggleStartMenu();">&#128196; О портале</div>
+    <div class="start-menu-divider"></div>
+    <div class="start-menu-item" onclick="toggleStartMenu();">&#128721; Завершение работы...</div>
+  </div>
+</div>
+
+<script>
+// ==============================
+// SOUND ENGINE (Web Audio API)
+// ==============================
+let soundEnabled = true;
+let audioCtx = null;
+
+function getAudioCtx() {
+  if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  return audioCtx;
+}
+
+function playClick() {
+  if (!soundEnabled) return;
+  try {
+    const ctx = getAudioCtx();
+    const o = ctx.createOscillator();
+    const g = ctx.createGain();
+    o.type = 'square';
+    o.frequency.setValueAtTime(800, ctx.currentTime);
+    o.frequency.exponentialRampToValueAtTime(400, ctx.currentTime + 0.05);
+    g.gain.setValueAtTime(0.15, ctx.currentTime);
+    g.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.06);
+    o.connect(g).connect(ctx.destination);
+    o.start(ctx.currentTime);
+    o.stop(ctx.currentTime + 0.06);
+  } catch(e) {}
+}
+
+function playError() {
+  if (!soundEnabled) return;
+  try {
+    const ctx = getAudioCtx();
+    [440, 349].forEach((freq, i) => {
+      const o = ctx.createOscillator();
+      const g = ctx.createGain();
+      o.type = 'square';
+      o.frequency.value = freq;
+      g.gain.setValueAtTime(0.12, ctx.currentTime + i * 0.18);
+      g.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + i * 0.18 + 0.16);
+      o.connect(g).connect(ctx.destination);
+      o.start(ctx.currentTime + i * 0.18);
+      o.stop(ctx.currentTime + i * 0.18 + 0.16);
+    });
+  } catch(e) {}
+}
+
+function playStartup() {
+  if (!soundEnabled) return;
+  try {
+    const ctx = getAudioCtx();
+    const notes = [523, 659, 784, 1047];
+    notes.forEach((freq, i) => {
+      const o = ctx.createOscillator();
+      const g = ctx.createGain();
+      o.type = 'sine';
+      o.frequency.value = freq;
+      g.gain.setValueAtTime(0, ctx.currentTime + i * 0.15);
+      g.gain.linearRampToValueAtTime(0.1, ctx.currentTime + i * 0.15 + 0.05);
+      g.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + i * 0.15 + 0.4);
+      o.connect(g).connect(ctx.destination);
+      o.start(ctx.currentTime + i * 0.15);
+      o.stop(ctx.currentTime + i * 0.15 + 0.4);
+    });
+  } catch(e) {}
+}
+
+function playReveal() {
+  if (!soundEnabled) return;
+  try {
+    const ctx = getAudioCtx();
+    const o = ctx.createOscillator();
+    const g = ctx.createGain();
+    o.type = 'triangle';
+    o.frequency.setValueAtTime(600, ctx.currentTime);
+    o.frequency.exponentialRampToValueAtTime(900, ctx.currentTime + 0.08);
+    g.gain.setValueAtTime(0.1, ctx.currentTime);
+    g.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.1);
+    o.connect(g).connect(ctx.destination);
+    o.start(ctx.currentTime);
+    o.stop(ctx.currentTime + 0.1);
+  } catch(e) {}
+}
+
+function playBoom() {
+  if (!soundEnabled) return;
+  try {
+    const ctx = getAudioCtx();
+    const o = ctx.createOscillator();
+    const g = ctx.createGain();
+    o.type = 'sawtooth';
+    o.frequency.setValueAtTime(200, ctx.currentTime);
+    o.frequency.exponentialRampToValueAtTime(30, ctx.currentTime + 0.3);
+    g.gain.setValueAtTime(0.2, ctx.currentTime);
+    g.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.3);
+    o.connect(g).connect(ctx.destination);
+    o.start(ctx.currentTime);
+    o.stop(ctx.currentTime + 0.3);
+  } catch(e) {}
+}
+
+function playNickGen() {
+  if (!soundEnabled) return;
+  try {
+    const ctx = getAudioCtx();
+    const notes = [523, 784, 1047, 784, 1047];
+    notes.forEach((freq, i) => {
+      const o = ctx.createOscillator();
+      const g = ctx.createGain();
+      o.type = 'square';
+      o.frequency.value = freq;
+      g.gain.setValueAtTime(0.06, ctx.currentTime + i * 0.06);
+      g.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + i * 0.06 + 0.06);
+      o.connect(g).connect(ctx.destination);
+      o.start(ctx.currentTime + i * 0.06);
+      o.stop(ctx.currentTime + i * 0.06 + 0.06);
+    });
+  } catch(e) {}
+}
+
+function toggleSound() {
+  soundEnabled = !soundEnabled;
+  document.getElementById('soundToggle').innerHTML = soundEnabled ? '&#128266;' : '&#128264;';
+  if (soundEnabled) playClick();
+}
+
+// Add click sound to all buttons
+document.addEventListener('click', e => {
+  if (e.target.closest('.retro-btn, .win-btn, .start-btn, .data-toggle, .taskbar-item, .start-menu-item')) {
+    playClick();
+  }
+});
+
+// ==============================
+// LOADING SCREEN
+// ==============================
+const loadingSteps = [
+  { pct: 5, text: 'Инициализация модема...' },
+  { pct: 12, text: 'Набор номера: 8-495-123-45-67...' },
+  { pct: 20, text: 'Соединение... bzzz krrr shhhh...' },
+  { pct: 30, text: 'Подключено! 28,800 bps' },
+  { pct: 40, text: 'Запрос DNS: stats98.narod.ru...' },
+  { pct: 55, text: 'Загрузка HTML документа...' },
+  { pct: 65, text: 'Загрузка графики (1 из 4)...' },
+  { pct: 75, text: 'Загрузка графики (3 из 4)...' },
+  { pct: 85, text: 'Загрузка скриптов JavaScript...' },
+  { pct: 92, text: 'Обработка стилей CSS...' },
+  { pct: 100, text: 'Готово!' },
+];
+
+let loadStep = 0;
+function advanceLoading() {
+  if (loadStep >= loadingSteps.length) {
+    setTimeout(() => {
+      document.getElementById('loadingScreen').classList.add('hidden');
+      setTimeout(() => { document.getElementById('loadingScreen').style.display = 'none'; }, 500);
+      playStartup();
+    }, 300);
+    return;
+  }
+  const step = loadingSteps[loadStep];
+  document.getElementById('loadingBar').style.width = step.pct + '%';
+  document.getElementById('loadingText').textContent = step.text;
+  loadStep++;
+  const delay = 200 + Math.random() * 500;
+  setTimeout(advanceLoading, delay);
+}
+
+// Start loading after fonts kick in
+setTimeout(advanceLoading, 400);
+
+// ==============================
+// DATA
+// ==============================
+const coffeeData = [
+  { country: 'Финляндия', value: 12.0, detail: '12 кг на человека — абсолютный рекорд!' },
+  { country: 'Норвегия', value: 9.9, detail: '9.9 кг — скандинавская традиция' },
+  { country: 'Нидерланды', value: 8.4, detail: '8.4 кг — кофе к тюльпанам' },
+  { country: 'Словения', value: 6.1, detail: '6.1 кг — европейский уровень' },
+  { country: 'Бразилия', value: 5.6, detail: '5.6 кг — родина кофе!' },
+  { country: 'Россия', value: 1.7, detail: '1.7 кг — чай всё-таки популярнее' },
+];
+
+const petData = [
+  { name: 'Кошки', value: 35, color: '#cc44aa', detail: '&#128049; Кошки — 35%. Более 600 млн по всему миру. Самый популярный питомец!' },
+  { name: 'Собаки', value: 28, color: '#4488cc', detail: '&#128054; Собаки — 28%. Лучший друг человека уже 15,000 лет.' },
+  { name: 'Рыбки', value: 18, color: '#00a89d', detail: '&#128032; Рыбки — 18%. Аквариумистика — третье по популярности хобби в мире.' },
+  { name: 'Птицы', value: 10, color: '#ffcc00', detail: '&#128038; Птицы — 10%. Попугаи могут запомнить до 1,500 слов.' },
+  { name: 'Грызуны', value: 6, color: '#6644aa', detail: '&#128057; Грызуны — 6%. Хомячки, морские свинки, шиншиллы и другие.' },
+  { name: 'Другие', value: 3, color: '#e87461', detail: '&#128034; Другие — 3%. Черепахи, змеи, хорьки и экзотика.' },
+];
+
+const funFacts = [
+  { icon: '&#128202;', text: 'Каждую секунду в мире выпивают 26,000 чашек кофе.' },
+  { icon: '&#127757;', text: 'Земля вращается со скоростью 1,670 км/ч на экваторе.' },
+  { icon: '&#128037;', text: 'Муравьи могут поднять вес в 50 раз больше собственного.' },
+  { icon: '&#9889;', text: 'Молния бьёт в Землю около 100 раз в секунду.' },
+  { icon: '&#128171;', text: 'Мировой интернет-трафик в 1998 году — около 1 ГБ/сек.' },
+  { icon: '&#127775;', text: 'Ближайшая звезда до Солнца — Проксима Центавра (4.24 св. года).' },
+  { icon: '&#128218;', text: 'В Библиотеке Конгресса хранится более 170 млн единиц.' },
+  { icon: '&#127754;', text: 'Океаны содержат 97% всей воды на Земле.' },
+  { icon: '&#128640;', text: 'Свет от Солнца до Земли идёт 8 минут 20 секунд.' },
+  { icon: '&#127836;', text: 'Итальянцы съедают 26 кг макарон на человека в год.' },
+];
+
+const mineFacts = [
+  'Финляндия — лидер по кофе: 12 кг/чел в год',
+  'На Земле ~600 млн кошек',
+  'Интернет в 1998: 360 млн пользователей',
+  'Первый сайт: 1991 год, CERN',
+  'В океане живёт ~230,000 видов',
+  'Мозг потребляет 20% энергии тела',
+  'Мёд не портится тысячи лет',
+  'Сердце бьётся ~100,000 раз в день',
+  'Свет обойдёт Землю за 0.13 сек',
+  'Бананы радиоактивны (немного!)',
+  'Средний человек ходит 5 раз вокруг Земли за жизнь',
+  'В 1998 году Nokia 6110 — хит продаж',
+  'Длина ДНК: 2 метра в каждой клетке',
+  'Луна удаляется от Земли на 3.8 см/год',
+  'Кофеин начинает действовать через 10 минут',
+  'Первое SMS отправлено в 1992 году',
+  'Температура ядра Земли: ~5500°C',
+  'Осьминог имеет 3 сердца',
+  'Пчёлы умеют считать до 4',
+  'Венера вращается в обратную сторону',
+  'Wi-Fi изобретён в 1997 году',
+  'Муравьи не спят',
+  'Молния: 30,000°C',
+  'Чихание: ~160 км/ч',
+  'Юпитер мог бы вместить 1300 Земель',
+];
+
+const extraCategories = [
+  { name: 'Интернет-пользователи (млн)', data: [16, 36, 70, 120, 188, 280, 360], labels: ['1992','1993','1994','1995','1996','1997','1998'], unit: 'млн чел.' },
+  { name: 'Мобильные телефоны (млн)', data: [23, 55, 90, 145, 215, 310, 470], labels: ['1992','1993','1994','1995','1996','1997','1998'], unit: 'млн абонентов' },
+  { name: 'Выбросы CO₂ (млрд тонн)', data: [22.0, 22.2, 22.6, 23.0, 23.5, 23.8, 24.1], labels: ['1992','1993','1994','1995','1996','1997','1998'], unit: 'млрд тонн' },
+];
+
+// ==============================
+// BANNER STARS
+// ==============================
+(function() {
+  const c = document.getElementById('bannerStars');
+  for (let i = 0; i < 20; i++) {
+    const s = document.createElement('span');
+    s.textContent = '✦';
+    s.style.left = Math.random()*100+'%';
+    s.style.top = Math.random()*100+'%';
+    s.style.animationDelay = Math.random()*2+'s';
+    s.style.fontSize = (6+Math.random()*6)+'px';
+    c.appendChild(s);
+  }
+})();
+
+// ==============================
+// POPULATION COUNTER
+// ==============================
+let population = 5943030000;
+const odometerEl = document.getElementById('odometer');
+function renderOdometer() {
+  const s = population.toString();
+  odometerEl.innerHTML = '';
+  for (let i = 0; i < s.length; i++) {
+    if (i > 0 && (s.length - i) % 3 === 0) {
+      const sep = document.createElement('div');
+      sep.className = 'odometer-sep';
+      sep.textContent = '.';
+      odometerEl.appendChild(sep);
+    }
+    const d = document.createElement('div');
+    d.className = 'odometer-digit';
+    d.textContent = s[i];
+    odometerEl.appendChild(d);
+  }
+}
+renderOdometer();
+setInterval(() => { population += Math.floor(Math.random()*3)+1; renderOdometer(); }, 400);
+
+// ==============================
+// COFFEE CHART
+// ==============================
+function buildCoffeeChart() {
+  const chart = document.getElementById('coffeeChart');
+  chart.innerHTML = '';
+  const mx = Math.max(...coffeeData.map(d => d.value));
+  coffeeData.forEach((d, i) => {
+    const col = document.createElement('div');
+    col.className = 'bar-col';
+    col.innerHTML = `<div class="bar-value">${d.value}</div><div class="bar-fill" style="height:${(d.value/mx)*160}px;animation-delay:${i*0.1}s"></div><div class="bar-label">${d.country}</div><div class="bar-tooltip">${d.detail}</div>`;
+    chart.appendChild(col);
+  });
+}
+function buildCoffeeTable() {
+  let h = '<table class="data-table"><tr><th>№</th><th>Страна</th><th>кг/чел в год</th></tr>';
+  coffeeData.forEach((d,i) => { h += `<tr><td>${i+1}</td><td>${d.country}</td><td>${d.value}</td></tr>`; });
+  document.getElementById('coffeeTableView').innerHTML = h + '</table>';
+}
+buildCoffeeChart();
+buildCoffeeTable();
+
+function toggleCoffeeView(view, btn) {
+  document.querySelectorAll('#winCoffee .data-toggle').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  document.getElementById('coffeeChartView').style.display = view === 'chart' ? '' : 'none';
+  document.getElementById('coffeeTableView').style.display = view === 'table' ? '' : 'none';
+}
+
+// ==============================
+// PIE CHART
+// ==============================
+function buildPieChart() {
+  const container = document.getElementById('pieContainer');
+  const total = petData.reduce((s,d) => s+d.value, 0);
+  let cum = 0;
+  const R = 80, cx = 90, cy = 90;
+  let svg = '';
+  petData.forEach((d,i) => {
+    const sa = (cum/total)*2*Math.PI; cum += d.value;
+    const ea = (cum/total)*2*Math.PI;
+    const la = ea-sa > Math.PI ? 1 : 0;
+    svg += `<path class="pie-slice" data-index="${i}" d="M${cx},${cy} L${cx+R*Math.cos(sa)},${cy+R*Math.sin(sa)} A${R},${R} 0 ${la},1 ${cx+R*Math.cos(ea)},${cy+R*Math.sin(ea)} Z" fill="${d.color}" />`;
+  });
+  let leg = '';
+  petData.forEach((d,i) => {
+    leg += `<div class="pie-legend-item" data-index="${i}" onclick="selectPet(${i})" onmouseenter="highlightPet(${i})" onmouseleave="unhighlightPet(${i})"><div class="pie-legend-color" style="background:${d.color}"></div><span>${d.name} — ${d.value}%</span></div>`;
+  });
+  container.innerHTML = `<div class="pie-chart-wrapper"><svg class="pie-chart-svg" viewBox="0 0 180 180">${svg}</svg></div><div class="pie-legend">${leg}</div>`;
+  document.querySelectorAll('.pie-slice').forEach(s => {
+    s.addEventListener('click', () => selectPet(+s.dataset.index));
+    s.addEventListener('mouseenter', () => highlightPet(+s.dataset.index));
+    s.addEventListener('mouseleave', () => unhighlightPet(+s.dataset.index));
+  });
+}
+let activePet = -1;
+function selectPet(idx) {
+  activePet = activePet===idx ? -1 : idx;
+  document.querySelectorAll('.pie-slice').forEach(s => s.classList.toggle('active', +s.dataset.index===activePet));
+  document.querySelectorAll('.pie-legend-item').forEach(l => l.classList.toggle('active', +l.dataset.index===activePet));
+  document.getElementById('pieDetail').innerHTML = activePet >= 0 ? petData[activePet].detail : 'Нажмите на сектор для подробностей';
+  playClick();
+}
+function highlightPet(idx) { if (activePet>=0) return; document.querySelectorAll('.pie-slice')[idx]?.classList.add('active'); document.querySelectorAll('.pie-legend-item')[idx]?.classList.add('active'); document.getElementById('pieDetail').innerHTML = petData[idx].detail; }
+function unhighlightPet(idx) { if (activePet>=0) return; document.querySelectorAll('.pie-slice')[idx]?.classList.remove('active'); document.querySelectorAll('.pie-legend-item')[idx]?.classList.remove('active'); document.getElementById('pieDetail').innerHTML = 'Нажмите на сектор для подробностей'; }
+buildPieChart();
+
+// ==============================
+// FUN FACTS
+// ==============================
+let factIdx = 0;
+function showFact() {
+  const f = funFacts[factIdx];
+  document.getElementById('factIcon').innerHTML = f.icon;
+  document.getElementById('factText').innerHTML = f.text;
+  document.getElementById('factCounter').textContent = `${factIdx+1} / ${funFacts.length}`;
+}
+function nextFact() { factIdx = (factIdx+1)%funFacts.length; showFact(); }
+function prevFact() { factIdx = (factIdx-1+funFacts.length)%funFacts.length; showFact(); }
+showFact();
+setInterval(nextFact, 8000);
+
+// ==============================
+// EXTRA DATA
+// ==============================
+let extraIdx = 0;
+function buildExtraRadios() {
+  const c = document.getElementById('extraRadios'); c.innerHTML = '';
+  extraCategories.forEach((cat,i) => {
+    const d = document.createElement('div');
+    d.className = 'retro-radio'+(i===extraIdx?' selected':'');
+    d.innerHTML = `<div class="retro-radio-dot"></div><span>${cat.name}</span>`;
+    d.onclick = () => { extraIdx=i; buildExtraRadios(); buildExtraChart(); playClick(); };
+    c.appendChild(d);
+  });
+}
+function buildExtraChart() {
+  const cat = extraCategories[extraIdx];
+  const chart = document.getElementById('extraChart');
+  const mx = Math.max(...cat.data);
+  chart.innerHTML = '';
+  cat.data.forEach((val,i) => {
+    const bar = document.createElement('div');
+    bar.className = 'mini-bar';
+    bar.style.height = (val/mx)*55+'px';
+    bar.title = `${cat.labels[i]}: ${val} ${cat.unit}`;
+    chart.appendChild(bar);
+  });
+  document.getElementById('extraLabel').textContent = cat.labels.join('  ·  ');
+  document.getElementById('extraStatus').textContent = `${cat.name} · ${cat.labels[0]}–${cat.labels[cat.labels.length-1]}`;
+}
+buildExtraRadios();
+buildExtraChart();
+
+// ==============================
+// VISITOR COUNTER
+// ==============================
+(function() {
+  const num = '004782';
+  const c = document.getElementById('visitorCounter');
+  for (const ch of num) {
+    const d = document.createElement('div');
+    d.className = 'visitor-digit';
+    d.textContent = ch;
+    c.appendChild(d);
+  }
+})();
+
+// ==============================
+// MINESWEEPER
+// ==============================
+const MINE_ROWS = 5, MINE_COLS = 6, MINE_BOMBS = 5;
+let mineBoard = [], mineRevealed = [], mineGameOver = false, mineTimer = 0, mineTimerInterval = null;
+
+function initMinesweeper() {
+  mineBoard = [];
+  mineRevealed = [];
+  mineGameOver = false;
+  mineTimer = 0;
+  document.getElementById('mineTimer').textContent = '0';
+  document.getElementById('mineCounter').textContent = MINE_BOMBS.toString();
+  document.getElementById('mineFace').innerHTML = '&#128578;';
+  document.getElementById('mineStatus').textContent = 'Готово';
+  if (mineTimerInterval) clearInterval(mineTimerInterval);
+  mineTimerInterval = null;
+
+  // Shuffle facts for cells
+  const shuffled = [...mineFacts].sort(() => Math.random()-0.5);
+
+  for (let r = 0; r < MINE_ROWS; r++) {
+    mineBoard[r] = [];
+    mineRevealed[r] = [];
+    for (let c = 0; c < MINE_COLS; c++) {
+      mineBoard[r][c] = { bomb: false, fact: shuffled[(r*MINE_COLS+c) % shuffled.length] };
+      mineRevealed[r][c] = false;
+    }
+  }
+
+  // Place bombs
+  let placed = 0;
+  while (placed < MINE_BOMBS) {
+    const r = Math.floor(Math.random()*MINE_ROWS);
+    const c = Math.floor(Math.random()*MINE_COLS);
+    if (!mineBoard[r][c].bomb) { mineBoard[r][c].bomb = true; placed++; }
+  }
+
+  renderMineGrid();
+}
+
+function renderMineGrid() {
+  const grid = document.getElementById('mineGrid');
+  grid.innerHTML = '';
+  for (let r = 0; r < MINE_ROWS; r++) {
+    for (let c = 0; c < MINE_COLS; c++) {
+      const cell = document.createElement('div');
+      cell.className = 'minesweeper-cell';
+      if (mineRevealed[r][c]) {
+        cell.classList.add('revealed');
+        if (mineBoard[r][c].bomb) {
+          cell.classList.add('bomb');
+          cell.innerHTML = '&#128163;';
+        } else {
+          cell.textContent = mineBoard[r][c].fact;
+          cell.style.color = '#333';
+        }
+      } else {
+        cell.textContent = '';
+        cell.addEventListener('click', () => revealMineCell(r, c));
+      }
+      grid.appendChild(cell);
+    }
+  }
+}
+
+function revealMineCell(r, c) {
+  if (mineGameOver || mineRevealed[r][c]) return;
+  if (!mineTimerInterval) {
+    mineTimerInterval = setInterval(() => {
+      mineTimer++;
+      document.getElementById('mineTimer').textContent = mineTimer;
+    }, 1000);
+  }
+  mineRevealed[r][c] = true;
+  if (mineBoard[r][c].bomb) {
+    mineGameOver = true;
+    playBoom();
+    document.getElementById('mineFace').innerHTML = '&#128565;';
+    document.getElementById('mineStatus').textContent = 'БУМ! Попробуйте ещё раз';
+    // Reveal all bombs
+    for (let rr = 0; rr < MINE_ROWS; rr++)
+      for (let cc = 0; cc < MINE_COLS; cc++)
+        if (mineBoard[rr][cc].bomb) mineRevealed[rr][cc] = true;
+    if (mineTimerInterval) clearInterval(mineTimerInterval);
+  } else {
+    playReveal();
+    // Check win
+    let unrevealed = 0;
+    for (let rr = 0; rr < MINE_ROWS; rr++)
+      for (let cc = 0; cc < MINE_COLS; cc++)
+        if (!mineRevealed[rr][cc] && !mineBoard[rr][cc].bomb) unrevealed++;
+    if (unrevealed === 0) {
+      mineGameOver = true;
+      document.getElementById('mineFace').innerHTML = '&#128526;';
+      document.getElementById('mineStatus').textContent = 'Победа! Все факты найдены!';
+      if (mineTimerInterval) clearInterval(mineTimerInterval);
+    }
+  }
+  renderMineGrid();
+}
+
+initMinesweeper();
+
+// ==============================
+// NICKNAME GENERATOR
+// ==============================
+let nickLang = 'ru';
+
+function setNickLang(lang) {
+  nickLang = lang;
+  document.getElementById('nickLangRu').classList.toggle('active', lang === 'ru');
+  document.getElementById('nickLangEn').classList.toggle('active', lang === 'en');
+  playClick();
+}
+
+const nickDecorRu = [
+  ['~*', '*~'], ['★', '★'], ['♛', '♛'], ['«', '»'], ['[', ']'],
+  ['✧', '✧'], ['❖', '❖'], ['▸', '◂'], ['●', '●'], ['♕', '♕']
+];
+const nickDecorEn = [
+  ['~*', '*~'], ['xXx_', '_xXx'], ['>>>', '<<<'], ['[', ']'], ['***', '***'],
+  ['=-', '-='], ['||', '||'], ['>>>', '<<<'], ['~', '~'], ['*~', '~*']
+];
+const nickPrefixRu = ['Крутой', 'Тёмный', 'Кибер', 'Мега', 'Супер', 'Нео', 'Дерзкий', 'Звёздный', 'Ледяной', 'Огненный', 'Лунный', 'Великий', 'Быстрый', 'Тихий'];
+const nickSuffixRu = ['_98', 'XXL', '_Pro', '2000', '_Мастер', '_Босс', '_Топ', '_Гуру', '_Ас', '_Маг', '_666', '_228'];
+const nickPrefixEn = ['Dark', 'Cyber', 'Mega', 'Neo', 'Shadow', 'Ice', 'Fire', 'Star', 'Cool', 'Silent', 'Crazy', 'Night'];
+const nickSuffixEn = ['_98', 'XXL', '_Pro', '2000', '_Master', '_Boss', '_Top', '_666', 'X', '_228'];
+
+function transliterate(text) {
+  const map = {'а':'a','б':'b','в':'v','г':'g','д':'d','е':'e','ё':'yo','ж':'zh','з':'z','и':'i','й':'y','к':'k','л':'l','м':'m','н':'n','о':'o','п':'p','р':'r','с':'s','т':'t','у':'u','ф':'f','х':'kh','ц':'ts','ч':'ch','ш':'sh','щ':'sch','ъ':'','ы':'y','ь':'','э':'e','ю':'yu','я':'ya'};
+  return text.split('').map(c => {
+    const lower = c.toLowerCase();
+    if (map[lower] !== undefined) {
+      const result = map[lower];
+      return c === lower ? result : result.charAt(0).toUpperCase() + result.slice(1);
+    }
+    return c;
+  }).join('');
+}
+
+function generateNick() {
+  let name = document.getElementById('nickInput').value.trim();
+  if (!name) { name = nickLang === 'ru' ? 'Аноним' : 'Anon'; }
+
+  playNickGen();
+
+  let nick;
+  if (nickLang === 'ru') {
+    const decor = nickDecorRu[Math.floor(Math.random()*nickDecorRu.length)];
+    const prefix = Math.random() > 0.4 ? nickPrefixRu[Math.floor(Math.random()*nickPrefixRu.length)] : '';
+    const suffix = Math.random() > 0.4 ? nickSuffixRu[Math.floor(Math.random()*nickSuffixRu.length)] : '';
+    const sep = Math.random() > 0.5 ? '_' : '';
+    nick = `${decor[0]} ${prefix}${sep}${name}${suffix} ${decor[1]}`;
+  } else {
+    const engName = transliterate(name);
+    const decor = nickDecorEn[Math.floor(Math.random()*nickDecorEn.length)];
+    const prefix = Math.random() > 0.4 ? nickPrefixEn[Math.floor(Math.random()*nickPrefixEn.length)] : '';
+    const suffix = Math.random() > 0.4 ? nickSuffixEn[Math.floor(Math.random()*nickSuffixEn.length)] : '';
+    const sep = Math.random() > 0.5 ? '_' : '';
+    nick = `${decor[0]}${prefix}${sep}${engName}${suffix}${decor[1]}`;
+  }
+
+  const resultEl = document.getElementById('nickResult');
+  // Add sparkles
+  let sparkles = '';
+  for (let i = 0; i < 6; i++) {
+    sparkles += `<span class="sparkle" style="left:${Math.random()*90}%;top:${Math.random()*80}%;animation-delay:${Math.random()*2}s;">✦</span>`;
+  }
+  resultEl.innerHTML = sparkles + `<span style="position:relative;z-index:1;">${nick}</span>`;
+  resultEl.dataset.nick = nick;
+}
+
+function copyNick() {
+  const resultEl = document.getElementById('nickResult');
+  const nick = resultEl.dataset.nick;
+  if (!nick) return;
+  navigator.clipboard.writeText(nick).then(() => {
+    document.getElementById('nickCopied').textContent = '✓ Скопировано!';
+    playClick();
+    setTimeout(() => { document.getElementById('nickCopied').textContent = ''; }, 2000);
+  }).catch(() => {
+    // Fallback
+    document.getElementById('nickCopied').textContent = 'Выделите и скопируйте вручную';
+    setTimeout(() => { document.getElementById('nickCopied').textContent = ''; }, 2000);
+  });
+}
+
+document.getElementById('nickInput').addEventListener('keydown', e => {
+  if (e.key === 'Enter') generateNick();
+});
+
+// ==============================
+// ERROR DIALOGS
+// ==============================
+const errorMessages = [
+  { title: 'Ошибка памяти', icon: '&#9888;', text: 'Недостаточно памяти для отображения статистики.<br>Закройте лишние программы и попробуйте снова.<br><br>Доступно: 4,096 КБ из 16,384 КБ' },
+  { title: 'Ошибка сети', icon: '&#9888;', text: 'Сервер статистики не отвечает.<br>Проверьте подключение модема.<br><br>Ошибка 408: Request Timeout' },
+  { title: 'Internet Explorer', icon: '&#128308;', text: 'Программа выполнила недопустимую операцию и будет закрыта.<br><br>IEXPLORE вызвал ошибку<br>в модуле STATS98.DLL' },
+  { title: 'Системное сообщение', icon: '&#128187;', text: 'Обнаружен конфликт IRQ 7.<br>Принтер LPT1 и звуковая карта<br>используют одно прерывание.' },
+  { title: 'Dr. Watson', icon: '&#128270;', text: 'Возникла непредвиденная ошибка в приложении «Бюро Статистики».<br><br>Отправить отчёт об ошибке?<br>(требуется подключение к Интернет)' },
+];
+
+let errorDialogVisible = false;
+
+function showErrorDialog() {
+  if (errorDialogVisible) return;
+  errorDialogVisible = true;
+  playError();
+
+  const err = errorMessages[Math.floor(Math.random() * errorMessages.length)];
+  const dialog = document.createElement('div');
+  dialog.className = 'error-dialog';
+  dialog.style.left = (100 + Math.random() * (window.innerWidth - 500)) + 'px';
+  dialog.style.top = (100 + Math.random() * (window.innerHeight - 300)) + 'px';
+
+  dialog.innerHTML = `
+    <div class="win-titlebar">
+      <span class="win-titlebar-text">${err.title}</span>
+      <div class="win-titlebar-buttons"><button class="win-btn" onclick="this.closest('.error-dialog').remove(); errorDialogVisible=false; playClick();">&#10005;</button></div>
+    </div>
+    <div class="error-body">
+      <div class="error-icon">${err.icon}</div>
+      <div class="error-text">${err.text}</div>
+    </div>
+    <div class="error-buttons">
+      <button class="retro-btn" onclick="this.closest('.error-dialog').remove(); errorDialogVisible=false; playClick();">OK</button>
+      <button class="retro-btn" onclick="this.closest('.error-dialog').remove(); errorDialogVisible=false; playClick();">Отмена</button>
+    </div>
+  `;
+
+  document.body.appendChild(dialog);
+
+  // Make error dialog draggable
+  const tb = dialog.querySelector('.win-titlebar');
+  let dragging = false, dx, dy;
+  tb.addEventListener('mousedown', e => {
+    if (e.target.classList.contains('win-btn')) return;
+    dragging = true;
+    const rect = dialog.getBoundingClientRect();
+    dx = e.clientX - rect.left;
+    dy = e.clientY - rect.top;
+    e.preventDefault();
+  });
+  document.addEventListener('mousemove', e => {
+    if (!dragging) return;
+    dialog.style.left = (e.clientX - dx) + 'px';
+    dialog.style.top = (e.clientY - dy) + 'px';
+  });
+  document.addEventListener('mouseup', () => { dragging = false; });
+}
+
+// Random error: first at 25-45 sec, then every 40-90 sec
+function scheduleError() {
+  const delay = 40000 + Math.random() * 50000;
+  setTimeout(() => {
+    showErrorDialog();
+    scheduleError();
+  }, delay);
+}
+setTimeout(() => { showErrorDialog(); scheduleError(); }, 25000 + Math.random() * 20000);
+
+// ==============================
+// DRAGGABLE WINDOWS
+// ==============================
+let dragState = null;
+const allWindows = document.querySelectorAll('.win-window');
+let topZ = 200;
+
+function focusWin(id) {
+  const win = document.getElementById(id);
+  if (!win) return;
+  if (win.style.display === 'none') win.style.display = '';
+  topZ++;
+  win.style.zIndex = topZ;
+  allWindows.forEach(w => {
+    w.querySelector('.win-titlebar').classList.toggle('inactive', w !== win);
+    w.classList.toggle('active', w === win);
+  });
+  win.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+}
+
+document.querySelectorAll('.win-titlebar').forEach(tb => {
+  tb.addEventListener('mousedown', e => {
+    if (e.target.classList.contains('win-btn')) return;
+    const win = tb.closest('.win-window');
+    if (win.closest('.error-dialog')) return;
+    focusWin(win.id);
+    const style = getComputedStyle(win);
+    if (style.position !== 'absolute') {
+      const rect = win.getBoundingClientRect();
+      win.style.position = 'absolute';
+      win.style.left = rect.left + window.scrollX + 'px';
+      win.style.top = rect.top + window.scrollY + 'px';
+      win.style.width = rect.width + 'px';
+    }
+    const rect = win.getBoundingClientRect();
+    dragState = { win, offsetX: e.clientX - rect.left, offsetY: e.clientY - rect.top };
+    e.preventDefault();
+  });
+});
+
+document.addEventListener('mousemove', e => {
+  if (!dragState) return;
+  dragState.win.style.left = (e.pageX - dragState.offsetX) + 'px';
+  dragState.win.style.top = (e.pageY - dragState.offsetY) + 'px';
+});
+document.addEventListener('mouseup', () => { dragState = null; });
+
+allWindows.forEach(w => { w.addEventListener('mousedown', () => { if(w.id) focusWin(w.id); }); });
+
+// ==============================
+// START MENU
+// ==============================
+function toggleStartMenu() {
+  const menu = document.getElementById('startMenu');
+  const btn = document.getElementById('startBtn');
+  menu.classList.toggle('visible');
+  btn.classList.toggle('pressed');
+}
+document.addEventListener('click', e => {
+  const menu = document.getElementById('startMenu');
+  const btn = document.getElementById('startBtn');
+  if (menu.classList.contains('visible') && !menu.contains(e.target) && !btn.contains(e.target)) {
+    menu.classList.remove('visible');
+    btn.classList.remove('pressed');
+  }
+});
+
+// ==============================
+// CLOCK
+// ==============================
+function updateClock() {
+  const now = new Date();
+  document.getElementById('trayClock').textContent = now.getHours().toString().padStart(2,'0') + ':' + now.getMinutes().toString().padStart(2,'0');
+}
+updateClock();
+setInterval(updateClock, 10000);
+
+// ==============================
+// WINDOW BUTTONS
+// ==============================
+document.querySelectorAll('.win-window > .win-titlebar .win-btn').forEach(btn => {
+  if (btn.textContent.trim() === '✕') {
+    btn.addEventListener('click', () => { btn.closest('.win-window').style.display = 'none'; });
+  }
+  if (btn.textContent.trim() === '_') {
+    btn.addEventListener('click', () => {
+      const win = btn.closest('.win-window');
+      const body = win.querySelector('.win-body') || win.querySelector('.fun-facts-body');
+      const sb = win.querySelector('.win-statusbar');
+      const mb = win.querySelector('.win-menubar');
+      if (body) body.style.display = body.style.display === 'none' ? '' : 'none';
+      if (sb) sb.style.display = sb.style.display === 'none' ? '' : 'none';
+      if (mb) mb.style.display = mb.style.display === 'none' ? '' : 'none';
+    });
+  }
+});
+</script>
+</body>
+</html>
